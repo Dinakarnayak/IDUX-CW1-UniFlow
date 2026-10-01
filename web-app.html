@@ -118,13 +118,25 @@ window.openGuestPortal=function(){
     const el=document.getElementById('authError');if(el){el.textContent='Guest access could not be opened. Please try again.';el.style.display='block'}
   }
 };
+window.go=window.go||function(id){
+ try{
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
+  var el=document.getElementById(id);
+  if(!el){window.uniflowShowError&&window.uniflowShowError('Page "'+id+'" could not be found.');return;}
+  el.classList.add('active');
+  document.querySelectorAll('.nav button').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-go')===id)});
+  try{history.replaceState(null,'','#'+id)}catch(e){}
+  if(typeof window.renderAll==='function'){try{window.renderAll()}catch(e){console.error(e);window.uniflowShowError&&window.uniflowShowError('The "'+id+'" page opened, but its data could not be refreshed: '+(e.message||e));}}
+ }catch(e){console.error(e);window.uniflowShowError&&window.uniflowShowError('Navigation error: '+(e.message||e));}
+};
+window.ufNavigate=window.go;
 </script>
 <div id="app" class="app">
 <aside class="sidebar"><div class="brand"><span class="mark">U</span>UniFlow</div><div class="nav">
-<small>My UniFlow</small><button data-go="today" class="active">⌂ Home</button><button data-go="activity">◉ Activity</button><button data-go="communications">✉ Mail & Messages</button><button data-go="courses">▣ Courses</button><button data-go="account">◉ Account</button><button data-go="services">▤ Student Services</button>
-<small>Plan</small><button data-go="calendar">▦ Calendar</button><button data-go="tasks">✓ To Do</button><button data-go="exams">◇ Assessments</button><button data-go="grades">◎ Grades</button>
-<small>Learn</small><button data-go="focus">◷ Focus</button><button data-go="scout">✦ AI Study Coach</button><button data-go="aiagent">🤖 AI Agent</button><button data-go="aiboard">✎ AI Board</button><button data-go="reminders">♧ Notifications</button>
-<small>University</small><button data-go="directory">▦ University Directory</button><button data-go="finance">£ Finance & Fees</button><button data-go="library">▤ Library</button><button data-go="attendance">◷ Attendance</button><button data-go="support">♡ Support Hub</button><small>Support</small><button data-go="accessibility">◌ Accessibility</button><button data-go="analytics">◒ Analytics</button><button data-go="settings">⚙ Settings</button></div></aside>
+<small>My UniFlow</small><button data-go="today" onclick="window.ufNavigate('today')" class="active">⌂ Home</button><button data-go="activity" onclick="window.ufNavigate('activity')">◉ Activity</button><button data-go="communications" onclick="window.ufNavigate('communications')">✉ Mail & Messages</button><button data-go="courses" onclick="window.ufNavigate('courses')">▣ Courses</button><button data-go="account" onclick="window.ufNavigate('account')">◉ Account</button><button data-go="services" onclick="window.ufNavigate('services')">▤ Student Services</button>
+<small>Plan</small><button data-go="calendar" onclick="window.ufNavigate('calendar')">▦ Calendar</button><button data-go="tasks" onclick="window.ufNavigate('tasks')">✓ To Do</button><button data-go="exams" onclick="window.ufNavigate('exams')">◇ Assessments</button><button data-go="grades" onclick="window.ufNavigate('grades')">◎ Grades</button>
+<small>Learn</small><button data-go="focus" onclick="window.ufNavigate('focus')">◷ Focus</button><button data-go="scout" onclick="window.ufNavigate('scout')">✦ AI Study Coach</button><button data-go="aiagent" onclick="window.ufNavigate('aiagent')">🤖 AI Agent</button><button data-go="aiboard" onclick="window.ufNavigate('aiboard')">✎ AI Board</button><button data-go="reminders" onclick="window.ufNavigate('reminders')">♧ Notifications</button>
+<small>University</small><button data-go="directory" onclick="window.ufNavigate('directory')">▦ University Directory</button><button data-go="finance" onclick="window.ufNavigate('finance')">£ Finance & Fees</button><button data-go="library" onclick="window.ufNavigate('library')">▤ Library</button><button data-go="attendance" onclick="window.ufNavigate('attendance')">◷ Attendance</button><button data-go="support" onclick="window.ufNavigate('support')">♡ Support Hub</button><small>Support</small><button data-go="accessibility" onclick="window.ufNavigate('accessibility')">◌ Accessibility</button><button data-go="analytics" onclick="window.ufNavigate('analytics')">◒ Analytics</button><button data-go="settings" onclick="window.ufNavigate('settings')">⚙ Settings</button></div></aside>
 <main class="main"><header class="top"><input class="search" id="search" placeholder="Search your planner…"><div class="topright">
 <button class="btn alt" onclick="openAdd('task')">＋ Add</button>
 <span class="sub" id="liveDateTime"></span>

@@ -28,6 +28,19 @@
 .board-card b{display:block;margin-bottom:6px}.ai-result{padding:14px;border-radius:12px;background:var(--soft);line-height:1.55}
 .a11y-large{font-size:17px!important}.a11y-large h1{font-size:2.35rem!important}.a11y-contrast{--bg:#fff;--panel:#fff;--ink:#111;--muted:#454545;--line:#111;--brand:#3b2bd6}.a11y-font{font-family:Arial,Helvetica,sans-serif!important}.a11y-motion *, .a11y-motion *::before,.a11y-motion *::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
 .dark .wide-action{background:#1b2130;color:#f2f4f8}.dark .board-card{background:#1b2130}.dark .board-canvas{background:#141925}
+
+/* Inclusive UniFlow AI helper */
+.uf-ai-fab{position:fixed;right:24px;bottom:24px;z-index:80;width:58px;height:58px;border:0;border-radius:18px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;font-size:22px;font-weight:900;box-shadow:0 12px 30px rgba(50,60,120,.24);cursor:pointer}
+.uf-ai-fab:hover{transform:translateY(-2px);box-shadow:0 16px 34px rgba(50,60,120,.3)}
+.uf-ai-panel{position:fixed;right:24px;bottom:92px;width:min(430px,calc(100vw - 32px));max-height:min(680px,calc(100vh - 120px));background:var(--panel);border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 70px rgba(30,40,70,.22);z-index:81;display:flex;flex-direction:column;overflow:hidden}
+.uf-ai-panel.hidden{display:none}.uf-ai-head{padding:15px 16px;border-bottom:1px solid var(--line);background:linear-gradient(135deg,var(--soft),var(--panel))}
+.uf-ai-head .avatar{width:34px;height:34px;border-radius:11px}.uf-ai-body{padding:13px;overflow:auto}.uf-ai-modes{display:flex;gap:6px;overflow:auto;padding-bottom:8px}
+.uf-ai-mode{white-space:nowrap;border:1px solid var(--line);background:var(--panel);border-radius:20px;padding:7px 10px;font-size:11px;font-weight:750;cursor:pointer;color:var(--ink)}
+.uf-ai-mode.active{background:var(--soft);color:var(--brand);border-color:#cbd1f2}.uf-ai-message{padding:11px 12px;border-radius:12px;background:var(--soft);line-height:1.5;margin-bottom:10px}
+.uf-ai-message.user{background:#f4f5f7;margin-left:28px}.uf-ai-suggestions{display:grid;gap:7px}.uf-ai-suggestion{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:9px 11px;text-align:left;cursor:pointer;color:var(--ink)}
+.uf-ai-suggestion:hover{border-color:#c8cdf3}.uf-ai-compose{display:flex;gap:7px;margin-top:10px}.uf-ai-compose input{flex:1}.uf-ai-foot{padding:9px 13px;border-top:1px solid var(--line);font-size:10px;color:var(--muted)}
+body.dark .uf-ai-suggestion,body.dark .uf-ai-mode{background:var(--panel);color:var(--ink)}body.dark .uf-ai-message.user{background:#20252f}
+@media(max-width:650px){.uf-ai-fab{right:16px;bottom:16px}.uf-ai-panel{right:16px;bottom:84px}}
 </style>
 </head>
 <body>
@@ -185,7 +198,31 @@ window.openGuestPortal=function(){
 <section id="settings" class="screen"><div class="eyebrow">Account & preferences</div><h1 class="title">Settings</h1><div class="card mt" style="max-width:700px"><div class="row"><span><b id="settingsName">Profile</b><br><small class="sub" id="settingsAccount">Local account</small></span><button class="btn alt" onclick="openProfile()">Edit profile</button></div><div class="item"><span class="item-main"><b>Account role</b><small class="sub" id="settingsRole">Student</small></span></div><div class="item"><span class="item-main"><b>Session</b><small class="sub">Sign out from this device.</small></span><button class="btn danger" onclick="signOut()">Sign out</button></div></div><div class="card mt" style="max-width:700px"><div class="row"><span><b>Dark mode</b><br><small class="sub">Use a darker interface for evening study.</small></span><input id="dark" type="checkbox" style="width:auto" onchange="setDark(this.checked)"></div><div class="item"><span class="item-main"><b>Default calendar view</b><small class="sub">Choose how your week opens.</small></span><select id="defaultView" onchange="saveSettings()"><option>Week</option><option>Day</option><option>Month</option></select></div><div class="item"><span class="item-main"><b>Class reminders</b><small class="sub">Receive a reminder before classes.</small></span><input id="classReminders" type="checkbox" checked onchange="saveSettings()" style="width:auto"></div><div class="item"><span class="item-main"><b>Deadline reminders</b><small class="sub">Receiv
 e reminders before tasks are due.</small></span><input id="deadlineReminders" type="checkbox" checked onchange="saveSettings()" style="width:auto"></div></div></section>
 </div></main></div>
-<div id="modal" class="modal hidden"><div class="modalbox"><div class="row"><h2 id="modalTitle">Add</h2><button class="btn alt" onclick="closeModal()">Close</button></div><div id="modalBody"></div></div></div><div id="toast" class="toast"></div>
+<button id="ufAiFab" class="uf-ai-fab" onclick="toggleInclusiveAI()" aria-label="Open UniFlow inclusive AI assistant" title="UniFlow AI assistant">✦</button>
+<div id="ufAiPanel" class="uf-ai-panel hidden" role="dialog" aria-modal="false" aria-labelledby="ufAiTitle">
+<div class="uf-ai-head"><div class="row"><div style="display:flex;align-items:center;gap:10px"><span class="avatar">AI</span><div><b id="ufAiTitle">UniFlow Inclusive AI</b><small class="sub" style="display:block">Personalised help for different access needs</small></div></div><button class="btn alt" onclick="toggleInclusiveAI()">Close</button></div></div>
+<div class="uf-ai-body">
+<div class="eyebrow">Choose how I should help</div>
+<div class="uf-ai-modes mt" id="ufAiModes">
+<button class="uf-ai-mode active" data-ai-mode="general" onclick="setAIMode('general')">General</button>
+<button class="uf-ai-mode" data-ai-mode="visual" onclick="setAIMode('visual')">Low / no vision</button>
+<button class="uf-ai-mode" data-ai-mode="hearing" onclick="setAIMode('hearing')">Hearing support</button>
+<button class="uf-ai-mode" data-ai-mode="motor" onclick="setAIMode('motor')">Motor support</button>
+<button class="uf-ai-mode" data-ai-mode="cognitive" onclick="setAIMode('cognitive')">Cognitive support</button>
+<button class="uf-ai-mode" data-ai-mode="reading" onclick="setAIMode('reading')">Reading support</button>
+<button class="uf-ai-mode" data-ai-mode="language" onclick="setAIMode('language')">Language support</button>
+</div>
+<div id="ufAiChat" aria-live="polite"><div class="uf-ai-message"><b>Hi! I’m your UniFlow accessibility assistant.</b><br><span id="ufAiIntro">Tell me what you need help with, or choose an access mode above. I can guide you to settings, explain a page, simplify information, and suggest an accessible way to complete a task.</span></div></div>
+<div class="uf-ai-suggestions" id="ufAiSuggestions">
+<button class="uf-ai-suggestion" onclick="askInclusiveAI('Make UniFlow easier to see')">Make UniFlow easier to see</button>
+<button class="uf-ai-suggestion" onclick="askInclusiveAI('I cannot hear the information. What can I use?')">I cannot hear the information</button>
+<button class="uf-ai-suggestion" onclick="askInclusiveAI('I have difficulty using a mouse')">I have difficulty using a mouse</button>
+<button class="uf-ai-suggestion" onclick="askInclusiveAI('Make this information easier to understand')">Make information easier to understand</button>
+</div>
+<div class="uf-ai-compose"><input id="ufAiInput" aria-label="Ask the inclusive AI assistant" placeholder="Ask me anything about UniFlow…"><button class="btn" onclick="submitInclusiveAI()">Ask</button></div>
+</div>
+<div class="uf-ai-foot">Local coursework prototype · accessibility guidance is informational, not a substitute for university disability support.</div>
+</div><div id="modal" class="modal hidden"><div class="modalbox"><div class="row"><h2 id="modalTitle">Add</h2><button class="btn alt" onclick="closeModal()">Close</button></div><div id="modalBody"></div></div></div><div id="toast" class="toast"></div>
 <script>
 const KEY='uniflowPlannerV2';
 const DEFAULT_DATA={tasks:[],classes:[],exams:[],grades:[],reminders:[],events:[],focus:0,focusSessions:0,courses:[
@@ -483,4 +520,67 @@ function renderAttendance(){const s=document.getElementById('attendanceStats');i
 function renderSupport(){const c=document.getElementById('supportCards');if(!c)return;c.innerHTML=[['Academic Support','Study skills, feedback and learning advice'],['Wellbeing','General student wellbeing support'],['IT Support','Account, access and technical help'],['Registry','Enrolment and academic records'],['Finance','Fees, funding and payments'],['Accommodation','Housing and accommodation support']].map(x=>'<div class="card"><h3>'+x[0]+'</h3><p class="sub">'+x[1]+'</p><button class="btn alt" onclick="createSupportRequest(\''+x[0]+'\')">Contact team</button></div>').join('');const rs=JSON.parse(localStorage.getItem(userDataKey()+'_support')||'[]');document.getElementById('supportRequests').innerHTML=rs.map(x=>'<div class="item"><span class="dot orange"></span><span class="item-main"><b>'+esc(x.subject)+'</b><small class="sub">'+esc(x.team)+' · '+esc(x.date)+'</small></span><span class="tag">'+esc(x.status)+'</span></div>').join('')||'<div class="empty">No support requests.</div>'}
 function createSupportRequest(team){if(!requireWrite())return;team=team||prompt('Which team do you need?','Academic Support');if(!team)return;const subject=prompt('Describe your request','I need help with my university timetable.');if(!subject)return;const key=userDataKey()+'_support',rs=JSON.parse(localStorage.getItem(key)||'[]');rs.unshift({team,subject,date:new Date().toLocaleDateString('en-GB'),status:'Submitted'});localStorage.setItem(key,JSON.stringify(rs));renderSupport();toast('Support request submitted locally')}
 function renderUniversityLayer(){renderDirectory();renderFinance();renderLibrary();renderAttendance();renderSupport();renderMail();renderUniversityServices()}
+
+let inclusiveAIMode='general';
+function toggleInclusiveAI(){const p=document.getElementById('ufAiPanel');if(!p)return;p.classList.toggle('hidden');if(!p.classList.contains('hidden'))setTimeout(()=>document.getElementById('ufAiInput')?.focus(),50)}
+function setAIMode(mode){
+ inclusiveAIMode=mode;document.querySelectorAll('.uf-ai-mode').forEach(b=>b.classList.toggle('active',b.dataset.aiMode===mode));
+ const intros={
+ general:'I can help with navigation, study planning, university services and accessibility settings.',
+ visual:'I will prioritise text descriptions, larger text, contrast, keyboard navigation and screen-reader-friendly instructions.',
+ hearing:'I will prioritise written instructions, captions, visual alerts and text alternatives rather than audio-only information.',
+ motor:'I will prioritise keyboard access, larger targets, fewer steps and alternatives to precise mouse actions.',
+ cognitive:'I will prioritise short steps, clear language, predictable navigation, reduced distraction and one task at a time.',
+ reading:'I will prioritise simplified wording, readable formatting, larger text and structured information.',
+ language:'I will use simpler language, explain university terms and break information into short sections.'
+ };
+ const intro=document.getElementById('ufAiIntro');if(intro)intro.textContent=intros[mode]||intros.general;
+ const suggestions={
+ visual:['Increase text size and contrast','Explain this page in a screen-reader-friendly way','Show me keyboard-friendly actions'],
+ hearing:['Show text alternatives for audio','Where can I find captions?','Give me visual notification options'],
+ motor:['Show me keyboard-only controls','Make controls easier to activate','Reduce the number of steps'],
+ cognitive:['Break this task into simple steps','Help me focus on one task','Reduce visual distractions'],
+ reading:['Simplify this information','Make the text easier to scan','Use shorter explanations'],
+ language:['Explain this university term simply','Rewrite this in plain English','Guide me step by step'],
+ general:['Help me plan today','Find accessibility settings','Explain how UniFlow works']
+ };
+ const box=document.getElementById('ufAiSuggestions');if(box)box.innerHTML=(suggestions[mode]||suggestions.general).map(q=>'<button class="uf-ai-suggestion" onclick="askInclusiveAI(\''+q.replace(/'/g,"\\'")+'\')">'+q+'</button>').join('');
+}
+function aiModeRecommendation(mode){
+ const map={
+ visual:'I recommend Large text, High contrast and Reading-friendly font. If you use a screen reader, keep the interface text-first and use the keyboard navigation described in Accessibility Centre.',
+ hearing:'Use written notifications and captions-ready media. UniFlow can keep important messages and alerts in text so information does not depend on sound.',
+ motor:'Use keyboard navigation, larger controls and fewer-step workflows. Tab, Enter and Space can operate the main UniFlow controls.',
+ cognitive:'Use Reduced motion, a focused page at a time and short task lists. The Home page can take you directly to one action instead of making you scan the whole portal.',
+ reading:'Use Large text, Reading-friendly font and simplified explanations. I can also break a task into smaller instructions.',
+ language:'I can explain university terminology in plain English and guide you through one step at a time.',
+ general:'I can help you navigate UniFlow and choose accessibility settings based on how you prefer to interact with the portal.'
+ };return map[mode]||map.general;
+}
+function applyAISettings(mode){
+ if(mode==='visual'){data.a11y.large=true;data.a11y.contrast=true;data.a11y.font=true}
+ if(mode==='hearing'){data.a11y.motion=true}
+ if(mode==='motor'){data.a11y.large=true;data.a11y.motion=true}
+ if(mode==='cognitive'){data.a11y.motion=true;data.a11y.large=true}
+ if(mode==='reading'){data.a11y.large=true;data.a11y.font=true}
+ if(mode==='language'){data.a11y.large=true}
+ save();applyA11y();renderAll();toast('Recommended accessibility settings applied');setAIMode(mode);
+}
+function askInclusiveAI(q){
+ if(!q)return;const chat=document.getElementById('ufAiChat');if(!chat)return;
+ chat.innerHTML+='<div class="uf-ai-message user"><b>You</b><br>'+esc(q)+'</div>';
+ const l=q.toLowerCase();let answer;
+ if(l.includes('see')||l.includes('vision')||inclusiveAIMode==='visual')answer='For visual access, use Large text, High contrast and Reading-friendly font. I can apply those settings for you. You can also use the keyboard and screen-reader-friendly labels throughout UniFlow.';
+ else if(l.includes('hear')||l.includes('audio')||inclusiveAIMode==='hearing')answer='For hearing access, keep key information in text, use captions-ready media and rely on visible alerts rather than sound. UniFlow’s messages, tasks and notifications remain available as written information.';
+ else if(l.includes('mouse')||l.includes('keyboard')||inclusiveAIMode==='motor')answer='For motor access, use Tab to move between controls and Enter or Space to activate them. I can also enable larger controls and reduced motion to make interaction easier.';
+ else if(l.includes('understand')||l.includes('simple')||inclusiveAIMode==='cognitive'||inclusiveAIMode==='reading')answer='I can simplify the task: first open the relevant UniFlow area, then complete one action at a time. Use Large text, Reading-friendly font and Reduced motion if they make the page easier to follow.';
+ else if(l.includes('language')||inclusiveAIMode==='language')answer='I can explain university terms in plain English and give instructions one step at a time. If you tell me the word or message you do not understand, I’ll rewrite it clearly.';
+ else if(l.includes('setting'))answer=aiModeRecommendation(inclusiveAIMode);
+ else answer='I can help with your timetable, tasks, assessments, messages, study planning and accessibility. Tell me what you are trying to do and I’ll guide you step by step.';
+ chat.innerHTML+='<div class="uf-ai-message"><b>UniFlow AI</b><br>'+esc(answer)+'</div>';
+ if((l.includes('make')||l.includes('increase')||l.includes('enable'))&&(inclusiveAIMode!=='general'))chat.innerHTML+='<button class="btn alt" style="margin-bottom:10px" onclick="applyAISettings(\''+inclusiveAIMode+'\')">Apply recommended '+inclusiveAIMode+' settings</button>';
+ chat.scrollTop=chat.scrollHeight;
+}
+function submitInclusiveAI(){const i=document.getElementById('ufAiInput');const q=i?.value.trim();if(!q)return;askInclusiveAI(q);i.value=''}
+document.getElementById('ufAiInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')submitInclusiveAI()});
 </script></body></html>

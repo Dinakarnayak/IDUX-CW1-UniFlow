@@ -61,6 +61,7 @@ body.dark .uf-ai-suggestion,body.dark .uf-ai-mode{background:var(--panel);color:
     <div id="freshLoginError" role="alert" aria-live="assertive" style="display:none;color:var(--red);margin-top:10px;padding:10px 12px;border:1px solid var(--red);border-radius:10px;background:rgba(255,80,80,.08)"></div>
     <button type="button" id="freshSignIn" class="btn" style="width:100%;margin-top:16px">Sign in</button>
     <button type="button" id="freshGuest" class="btn alt" style="width:100%;margin-top:10px">Continue as guest</button>
+    <button type="button" id="freshCreate" class="btn alt" style="width:100%;margin-top:10px">Create a new local user</button>
   </div>
   <div class="grid g2" style="margin-top:12px">
     <div class="card" style="padding:14px"><b>Student demo</b><small class="sub" style="display:block;margin-top:5px">dinakar@uniflow.local<br>demo1234</small></div>
@@ -892,8 +893,22 @@ function mailData(){
    return false;
  }
  window.uniflowStandaloneSignOut=logout;
+ function createUser(){
+   var email=prompt('University email (example: newstudent@uniflow.local):','');
+   if(!email)return;
+   email=email.trim().toLowerCase();
+   if(!/^\S+@uniflow\.local$/.test(email)){error('Use a university email ending in @uniflow.local.');return}
+   var name=prompt('Full name:','New UniFlow Student');if(!name)return;
+   var password=prompt('Create a password (minimum 6 characters):','');if(!password)return;
+   if(password.length<6){error('Password must contain at least 6 characters.');return}
+   var d=db();if(d.users[email]){error('That account already exists.');return}
+   d.users[email]={id:'UF-'+String(Object.keys(d.users).length+1).padStart(3,'0'),email:email,name:name,role:'Student',course:'MSc Artificial Intelligence',courseIds:['CO7091','CO7262','CO7113'],studentId:email.split('@')[0],passwordHash:hash(password),status:'active',createdAt:Date.now()};
+   save(d);enter(email);
+ }
  function boot(){
-   document.getElementById('freshSignIn').onclick=signIn;document.getElementById('freshGuest').onclick=guest;
+   document.getElementById('freshSignIn').onclick=signIn;
+   document.getElementById('freshGuest').onclick=guest;
+   document.getElementById('freshCreate').onclick=createUser;
    document.querySelectorAll('button[onclick="signOut()"]').forEach(function(b){b.onclick=logout});
    // Seed the demo accounts before the standalone login reads them.
    if(typeof seedAuthDB==='function')seedAuthDB();

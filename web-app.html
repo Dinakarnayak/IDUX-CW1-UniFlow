@@ -744,7 +744,7 @@ function mailData(){
  const subjects=['Attendance reminder','Assessment calendar update','New feedback available','Research skills session','Student community events','Accessible study resources','Digital library access','Payment reminder','Password and account guidance','Semester learning survey','Academic record update','Careers opportunities briefing','Wellbeing check-in','Space AI seminar update','Coursework submission guidance','Timetable change notice','Library database update','Academic adviser reminder','Study skills appointment','Examination regulations'];
  const senders=['Student Services','Examinations Office','CO7091 Teaching Team','Research Office','Student Union','Accessibility Centre','Library','Finance Office','IT Service Desk','Academic Registry','Academic Skills','Careers Service','Wellbeing Team','CO7113 Teaching Team','CO7262 Teaching Team','Registry','Library','Academic Adviser','Academic Skills','Examinations Office'];
  const arr=base.map((x,i)=>[x[0],x[1],x[2],x[3],iso(-i)]);
- for(let i=base.length;i<30;i++)arr.push([senders[i-10],subjects[i-10]+' · UniFlow update','This is a populated local university message with relevant information for your student workspace.',i<15,iso(-i)]);
+ for(let i=base.length;i<30;i++)arr.push([senders[i-base.length],subjects[i-base.length],'UniFlow demo message with relevant information for your student workspace.',i<15,iso(-i)]);
  return arr;
 }
 </script></body></html>

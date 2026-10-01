@@ -109,16 +109,36 @@ window.uniflowSignIn=function(){
   try{
     var email=(document.getElementById('email')?.value||'').trim().toLowerCase();
     var password=document.getElementById('password')?.value||'';
-    if(!email){window.uniflowShowError('Please enter your university email.');return;}
-    if(!password){window.uniflowShowError('Please enter your password.');return;}
-    if(typeof window.login==='function'){
-      window.login();
-      return;
-    }
-    window.uniflowShowError('Sign-in is unavailable because the UniFlow authentication module did not load.');
+    if(!email){window.uniflowShowError('Please enter your university email.');return false;}
+    if(!password){window.uniflowShowError('Please enter your password.');return false;}
+    var DB='uniflowUniversityDBV1', SESSION='uniflowLocalSessionV2';
+    var d;
+    try{d=JSON.parse(localStorage.getItem(DB)||'null')}catch(e){d=null}
+    if(!d||!d.users){window.uniflowShowError('UniFlow account database is not available. Please refresh the page.');return false;}
+    var u=d.users[email];
+    if(!u){window.uniflowShowError('Account not found in the UniFlow University directory.');return false;}
+    var h=2166136261, s=String(password);
+    for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}
+    var hash='uf-'+(h>>>0).toString(16);
+    if(u.status!=='active'||u.passwordHash!==hash){window.uniflowShowError('Incorrect university email or password.');return false;}
+    d.sessions=d.sessions||{};
+    var sid='UFSESSION-'+Date.now();
+    d.sessions[sid]={email:email,createdAt:Date.now(),expiresAt:Date.now()+43200000};
+    localStorage.setItem(DB,JSON.stringify(d));
+    localStorage.setItem(SESSION,sid);
+    localStorage.setItem('uniflowSession','active');
+    localStorage.setItem('uniflowCurrentUser',JSON.stringify({email:email}));
+    var auth=document.getElementById('auth'),app=document.getElementById('app');
+    if(auth)auth.style.display='none';
+    if(app)app.style.display='block';
+    if(typeof window.loadUserData==='function')window.loadUserData();
+    if(typeof window.renderAll==='function')window.renderAll();
+    else window.uniflowShowError('Sign-in succeeded, but the workspace did not load. Please refresh the page.');
+    return false;
   }catch(err){
     console.error('UniFlow sign-in error',err);
     window.uniflowShowError('Sign-in error: '+(err&&err.message?err.message:String(err)));
+    return false;
   }
 };
 window.uniflowDiagnostics=function(){

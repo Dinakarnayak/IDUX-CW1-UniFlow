@@ -245,7 +245,7 @@ function registerNow(){
  if(!password||password.length<4){setAuthError('Password must contain at least 4 characters.');return}
  seedAuthDB();const d=authDB();
  if(d.users[email]){setAuthError('That university account already exists.');return}
- d.users[email]={id:'UF-'+String(Object.keys(d.users).length+1).padStart(3,'0'),email,name,role:'Student',course:'MSc Artificial Intelligence',passwordHash:localHash(password),status:'active'};
+ d.users[email]={id:'UF-'+String(Object.keys(d.users).length+1).padStart(3,'0'),email,name,role:'Student',course:'MSc Artificial Intelligence',courseIds:[],passwordHash:localHash(password),status:'active'};
  saveAuthDB(d);createLocalSession(email);enterApp();toast('Account created — signed in as '+name);
 }
 document.getElementById('newUserBtn')?.addEventListener('click',registerNow);
@@ -311,14 +311,14 @@ function readAnnouncement(id){const a=data.announcements.find(x=>x.id===id);if(a
 function markActivityRead(){(data.announcements||[]).forEach(x=>x.unread=false);save();renderActivity();toast('All announcements marked as read')}
 function renderCourses(){
  const c=document.getElementById('courseCards'); if(!c)return;
- c.innerHTML=(data.courses||[]).map(x=>'<button class="card" style="text-align:left;cursor:pointer" onclick="openCourse(\''+x.id+'\')"><span class="eyebrow">'+esc(x.id)+'</span><h3>'+esc(x.name)+'</h3><p class="sub">'+esc(x.teacher)+'</p><div class="progress"><i style="width:'+x.progress+'%"></i></div><small class="sub">'+x.progress+'% progress</small></button>').join('');
+ const p=currentProfile();const guest=p?.role==='Guest';const allowed=(data.courses||[]).filter(x=>canAccessCourse(x.id));c.innerHTML=(data.courses||[]).map(x=>{const open=canAccessCourse(x.id);return '<button class="card" style="text-align:left;cursor:'+(open?'pointer':'not-allowed')+';opacity:'+(open?'1':'.62')+'" onclick="openCourse(\''+x.id+'\')"><span class="eyebrow">'+esc(x.id)+'</span><h3>'+esc(x.name)+'</h3><p class="sub">'+esc(x.teacher)+'</p><div class="progress"><i style="width:'+x.progress+'%"></i></div><small class="sub">'+(open?x.progress+'% progress':guest?'Catalogue only · access restricted':'Not assigned to this account')+'</small></button>'}).join('');
  renderCourseWorkspace('content');
 }
-function openCourse(id){document.querySelector('#courses .tag').textContent=id;renderCourseWorkspace('content');go('courses')}
+function openCourse(id){if(!canAccessCourse(id)){toast(courseAccessMessage());return}document.querySelector('#courses .tag').textContent=id;renderCourseWorkspace('content');go('courses')}
 function courseTab(tab,b){document.querySelectorAll('#courseTabs .tab').forEach(x=>x.classList.remove('active'));b?.classList.add('active');renderCourseWorkspace(tab)}
 function renderCourseWorkspace(tab){
  const el=document.getElementById('courseWorkspace');if(!el)return;
- const course=(data.courses||[])[0]||{id:'CO7091',name:'Course',progress:0};
+ const requested=document.querySelector('#courses .tag')?.textContent;const course=(data.courses||[]).find(x=>x.id===requested&&canAccessCourse(x.id))||(data.courses||[]).find(x=>canAccessCourse(x.id));if(!course){el.innerHTML='<div class="card"><h3>Course access restricted</h3><p class="sub">'+esc(courseAccessMessage())+'</p></div>';return}
  const maps={
  content:'<div class="list"><div class="item"><span class="item-main"><b>Week 1 — Foundations</b><small class="sub">Lecture slides · Reading · Video</small></span><span class="tag green">Complete</span></div><div class="item"><span class="item-main"><b>Week 2 — Core concepts</b><small class="sub">Lecture notes · Practice activity</small></span><span class="tag green">Complete</span></div><div class="item"><span class="item-main"><b>Week 6 — Neural networks</b><small class="sub">Slides · Lab · AI-generated study guide</small></span><span class="tag">In progress</span></div></div>',
  announcements:'<div class="list">'+(data.announcements||[]).map(x=>'<div class="item"><span class="item-main"><b>'+esc(x.title)+'</b><small class="sub">'+esc(x.date)+' · '+esc(x.course)+'</small></span><button class="btn alt" onclick="readAnnouncement('+x.id+')">Open</button></div>').join('')+'</div>',
@@ -360,11 +360,31 @@ function openAddCourse(){const n=prompt('Course name','New module');if(!n)return
 
 const AUTH_DB_KEY='uniflowUniversityDBV1',SESSION_KEY='uniflowLocalSessionV2',SESSION_TTL=43200000;
 const UNIVERSITY={id:'UNIFLOW-UNI',name:'UniFlow University',domain:'uniflow.local',country:'United Kingdom'};
-const ROLE_PERMISSIONS={Student:['read','write'], 'Professor / Staff':['read','write','teaching','analytics'], Administrator:['read','write','teaching','analytics','admin'], Guest:['read']};
+const ROLE_PERMISSIONS={Student:['read','write'], 'Professor / Staff':['read','write','teaching','analytics'], Administrator:['read','write','teaching','analytics','admin'], Guest:['catalogue']};
+const COURSE_CATALOG={
+ CO7091:{name:'Computational Intelligence & Software Engineering',teacher:'Dr. Alex Morgan'},
+ CO7262:{name:'AI Security, Ethics & Management',teacher:'Dr. Priya Shah'},
+ CO7113:{name:'AI for Space',teacher:'Dr. Jamie Lee'}
+};
+const ROLE_COURSE_ACCESS={
+ 'dinakar@uniflow.local':['CO7091','CO7262','CO7113'],
+ 'student@uniflow.local':['CO7262'],
+ 'professor@uniflow.local':['CO7091','CO7113'],
+ 'admin@uniflow.local':['*'],
+ 'guest@uniflow.local':[]
+};
+function canAccessCourse(courseId){
+ const p=currentProfile(); if(!p)return false;
+ if(p.role==='Administrator')return true;
+ if(p.role==='Guest')return false;
+ const ids=p.courseIds||ROLE_COURSE_ACCESS[p.email]||[];
+ return ids.includes('*')||ids.includes(courseId);
+}
+function courseAccessMessage(){const p=currentProfile();return p?.role==='Guest'?'Guest access can view the course catalogue but cannot open course content.':'This course is not assigned to your university account.'}
 function localHash(v){let h=2166136261;for(let i=0;i<String(v).length;i++){h^=String(v).charCodeAt(i);h=Math.imul(h,16777619)}return 'uf-'+(h>>>0).toString(16)}
 function authDB(){try{const d=JSON.parse(localStorage.getItem(AUTH_DB_KEY)||'null');return d&&d.users?d:{university:UNIVERSITY,users:{},sessions:{}}}catch(e){return {university:UNIVERSITY,users:{},sessions:{}}}}
 function saveAuthDB(d){localStorage.setItem(AUTH_DB_KEY,JSON.stringify(d))}
-function seedAuthDB(){const d=authDB();d.university=UNIVERSITY;d.users=d.users||{};[['dinakar@uniflow.local','Dinakar Nayak','Student','MSc Artificial Intelligence','demo1234'],['student@uniflow.local','Aisha Khan','Student','MSc Artificial Intelligence','demo1234'],['professor@uniflow.local','Alex Morgan','Professor / Staff','Teaching Workspace','professor123'],['admin@uniflow.local','UniFlow Administrator','Administrator','University Administration','admin123'],['guest@uniflow.local','Guest User','Guest','Demo Access','']].forEach((u,i)=>{const existing=d.users[u[0]]||{};d.users[u[0]]={id:existing.id||'UF-'+String(i+1).padStart(3,'0'),email:u[0],name:existing.name||u[1],role:existing.role||u[2],course:existing.course||u[3],passwordHash:localHash(u[4]),status:'active'}});d.sessions=d.sessions||{};saveAuthDB(d);return d}
+function seedAuthDB(){const d=authDB();d.university=UNIVERSITY;d.users=d.users||{};[['dinakar@uniflow.local','Dinakar Nayak','Student','MSc Artificial Intelligence','demo1234'],['student@uniflow.local','Aisha Khan','Student','MSc Artificial Intelligence','demo1234'],['professor@uniflow.local','Alex Morgan','Professor / Staff','Teaching Workspace','professor123'],['admin@uniflow.local','UniFlow Administrator','Administrator','University Administration','admin123'],['guest@uniflow.local','Guest User','Guest','Demo Access','']].forEach((u,i)=>{const existing=d.users[u[0]]||{};d.users[u[0]]={id:existing.id||'UF-'+String(i+1).padStart(3,'0'),email:u[0],name:existing.name||u[1],role:existing.role||u[2],course:existing.course||u[3],courseIds:existing.courseIds||ROLE_COURSE_ACCESS[u[0]]||[],passwordHash:localHash(u[4]),status:'active'}});d.sessions=d.sessions||{};saveAuthDB(d);return d}
 function currentProfile(){const d=authDB(),sid=localStorage.getItem(SESSION_KEY),s=d.sessions?.[sid];if(!s||Date.now()>s.expiresAt)return null;const u=d.users?.[s.email];return u?{...u,key:u.email}:null}
 function profileKey(){const p=currentProfile();return p&&p.key?p.key:'guest'}
 function userDataKey(){return KEY+'_'+profileKey()}

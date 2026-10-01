@@ -250,24 +250,64 @@ function taskDueDate(t){if(t.dueDate)return new Date(t.dueDate+'T23:59:59');cons
 function dueText(t){const d=taskDueDate(t);if(!d)return t.due||'No due date';const today=dateKey(now()),dk=dateKey(d);if(dk===today)return 'Today';const tomorrow=new Date(now());tomorrow.setDate(tomorrow.getDate()+1);if(dk===dateKey(tomorrow))return 'Tomorrow';return shortDate(d)}
 function daysUntil(d){return Math.max(0,Math.ceil((new Date(d)-now())/86400000))}
 function seedLiveDemoData(d){
- if(d.classes.length||d.events.length||d.tasks.length||d.exams.length)return d;
- const days=weekDays(), work=days.slice(0,5);
- d.classes=[
+ const due=(offset)=>{const x=new Date(now());x.setDate(x.getDate()+offset);return dateKey(x)};
+ const label=(offset)=>dateLabel(new Date(now().getTime()+offset*86400000));
+ const days=weekDays(),work=days.slice(0,5);
+ if(!d.classes.length)d.classes=[
   {id:1,name:'Computational Intelligence & Software Engineering',teacher:'Dr. Alex Morgan',room:'2.14',day:dayName(work[1]),time:'10:00–12:00',color:'blue'},
   {id:2,name:'AI Security, Ethics & Management',teacher:'Dr. Priya Shah',room:'1.08',day:dayName(work[3]),time:'13:00–15:00',color:'purple'},
   {id:3,name:'AI for Space',teacher:'Dr. Jamie Lee',room:'3.21',day:dayName(work[4]),time:'09:00–11:00',color:'green'}
  ];
- d.events=d.classes.map(x=>({day:x.day,time:x.time,title:x.name.split(' & ')[0],type:'class'}));
- const due=(offset)=>{const x=new Date(now());x.setDate(x.getDate()+offset);return dateKey(x)};
- d.tasks=[
+ const classEvents=d.classes.map((x,i)=>({id:'class-'+x.id,day:x.day,time:x.time,title:x.name.split(' & ')[0],type:'class',date:dateKey(work[Math.min(i+1,4)])}));
+ const demoEvents=[
+  {id:'study-1',day:dayName(work[0]),time:'14:00–15:00',title:'Independent study — CO7091',type:'study',date:dateKey(work[0])},
+  {id:'study-2',day:dayName(work[1]),time:'13:00–14:00',title:'Library research session',type:'study',date:dateKey(work[1])},
+  {id:'study-3',day:dayName(work[2]),time:'16:00–17:00',title:'AI Security revision',type:'study',date:dateKey(work[2])},
+  {id:'meeting-1',day:dayName(work[3]),time:'11:30–12:00',title:'Academic adviser check-in',type:'meeting',date:dateKey(work[3])},
+  {id:'study-4',day:dayName(work[4]),time:'12:00–13:00',title:'AI for Space seminar preparation',type:'study',date:dateKey(work[4])},
+  {id:'study-5',day:dayName(work[4]),time:'15:00–16:00',title:'Weekly literature review',type:'study',date:dateKey(work[4])},
+  {id:'future-1',day:dayName(new Date(now().getTime()+7*86400000)),time:'10:00–11:00',title:'Assessment planning session',type:'study',date:dateKey(new Date(now().getTime()+7*86400000))}
+ ];
+ const existingEvents=new Map((d.events||[]).map(x=>[x.id||x.title,x]));
+ classEvents.concat(demoEvents).forEach(x=>{if(!existingEvents.has(x.id))d.events.push(x)});
+ if(!d.tasks.length)d.tasks=[
   {id:101,title:'Computational Intelligence coursework draft',class:'CO7091',dueDate:due(2),progress:45,type:'Coursework',hours:4},
   {id:102,title:'AI Security reading and notes',class:'CO7262',dueDate:due(5),progress:20,type:'Reading',hours:2},
   {id:103,title:'Prepare AI for Space seminar',class:'CO7113',dueDate:due(7),progress:0,type:'Seminar',hours:3},
   {id:104,title:'Weekly literature review',class:'CO7091',dueDate:due(10),progress:75,type:'Research',hours:2}
  ];
- d.exams=[
-  {id:201,name:'AI Security, Ethics & Management assessment',class:'CO7262',date:dateLabel(new Date(now().getTime()+21*86400000)),days:21,room:'Exam Hall A'},
-  {id:202,name:'Computational Intelligence final assessment',class:'CO7091',date:dateLabel(new Date(now().getTime()+42*86400000)),days:42,room:'Exam Hall B'}
+ if(!d.exams.length)d.exams=[
+  {id:201,name:'AI Security, Ethics & Management assessment',class:'CO7262',date:label(21),days:21,room:'Exam Hall A'},
+  {id:202,name:'Computational Intelligence final assessment',class:'CO7091',date:label(42),days:42,room:'Exam Hall B'},
+  {id:203,name:'AI for Space coursework presentation',class:'CO7113',date:label(56),days:56,room:'Seminar Room 3.21'}
+ ];
+ if(!d.grades.length)d.grades=[
+  {class:'CO7091',name:'Lab portfolio',mark:72,credits:15},
+  {class:'CO7262',name:'Ethics case study',mark:68,credits:15},
+  {class:'CO7113',name:'Space AI practical',mark:74,credits:15}
+ ];
+ if(!d.reminders.length)d.reminders=[
+  {text:'Review CO7091 coursework draft',when:'Tomorrow · 09:00'},
+  {text:'Prepare questions for adviser meeting',when:'Thursday · 11:00'},
+  {text:'Start CO7262 assessment revision',when:'Monday · 10:00'}
+ ];
+ const anns=[
+  {id:1,course:'CO7091',title:'Week 6 materials are now available',date:'Today',unread:true},
+  {id:2,course:'CO7262',title:'Assessment guidance and feedback session',date:'Tomorrow',unread:true},
+  {id:3,course:'CO7113',title:'Reading list updated',date:'Friday',unread:true},
+  {id:4,course:'Registry',title:'Student record and timetable review',date:'Today',unread:false},
+  {id:5,course:'Library',title:'New AI research databases available',date:'Yesterday',unread:false}
+ ];
+ const annIds=new Set((d.announcements||[]).map(x=>x.id));anns.forEach(x=>{if(!annIds.has(x.id))d.announcements.push(x)});
+ if(!d.discussions.length)d.discussions=[
+  {id:1,title:'How should we evaluate model bias?',course:'CO7262',replies:12,last:'Today'},
+  {id:2,title:'Week 6 seminar discussion',course:'CO7091',replies:8,last:'Today'},
+  {id:3,title:'Satellite imaging resources',course:'CO7113',replies:5,last:'Yesterday'}
+ ];
+ if(!d.board.length)d.board=[
+  {title:'CO7091',text:'Neural networks → optimisation → evaluation'},
+  {title:'This week',text:'Finish literature review and prepare for seminar'},
+  {title:'CO7262',text:'Review ethics framework before assessment'}
  ];
  return d;
 }
@@ -359,10 +399,16 @@ function homeRefresh(){loadUserData();renderAll();toast('Home dashboard refreshe
 function startHomeFocus(){go('focus');setTimeout(()=>{if(!running)toggleTimer()},50)}
 function renderCalendar(){
  const g=document.getElementById('calendarGrid');if(!g)return;const ds=weekDays(),days=ds.map(dayName);const range=document.getElementById('calendarRange');if(range)range.textContent=shortDate(ds[0])+' – '+shortDate(ds[6])+' '+ds[6].getFullYear();
- if(cal==='month'){g.style.gridTemplateColumns='repeat(7,1fr)';const first=new Date(now().getFullYear(),now().getMonth(),1),count=new Date(now().getFullYear(),now().getMonth()+1,0).getDate();g.innerHTML=['Mon','Tue','Wed','Thu','Fri','Sat','Sun',...Array.from({length:count},(_,i)=>i+1)].map(x=>'<div class="cell '+(typeof x==='string'?'head':'')+'"><b>'+x+'</b></div>').join('');return}
- if(cal==='day'){const today=now(),dn=dayName(today);g.style.gridTemplateColumns='90px 1fr';g.innerHTML='<div class="cell head"></div><div class="cell head">'+dn+' '+today.getDate()+'</div>'+['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00'].map(h=>'<div class="cell time">'+h+'</div><div class="cell">'+data.events.filter(e=>e.day===dn&&e.time.startsWith(h)).map(e=>'<div class="cal-event '+(e.type==='class'?'':'green')+'"><b>'+esc(e.title)+'</b><br>'+esc(e.time)+'</div>').join('')+'</div>').join('');return}
+ if(cal==='month'){
+  g.style.gridTemplateColumns='repeat(7,1fr)';
+  const first=new Date(now().getFullYear(),now().getMonth(),1),count=new Date(now().getFullYear(),now().getMonth()+1,0).getDate();
+  const cells=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  for(let i=1;i<=count;i++){const d=new Date(first.getFullYear(),first.getMonth(),i),key=dateKey(d),ev=(data.events||[]).filter(x=>x.date===key);cells.push('<div class="cell"><b>'+i+'</b>'+ev.slice(0,3).map(x=>'<div class="cal-event '+(x.type==='class'?'':'green')+'" onclick="toast(\''+esc(x.title).replace(/'/g,"\\'")+' · '+esc(x.time).replace(/'/g,"\\'")+'\')"><b>'+esc(x.title)+'</b><br><small>'+esc(x.time)+'</small></div>').join('')+(ev.length>3?'<small class="sub">+'+(ev.length-3)+' more</small>':'')+'</div>')}
+  g.innerHTML=cells.map(x=>'<div class="cell '+(typeof x==='string'?'head':'')+'">'+x+'</div>').join('');return
+ }
+ if(cal==='day'){const today=now(),dn=dayName(today);g.style.gridTemplateColumns='90px 1fr';g.innerHTML='<div class="cell head"></div><div class="cell head">'+dn+' '+today.getDate()+'</div>'+['08:00','09:00','10:00','11:00','12:00','13:00','14:00','15:00','16:00','17:00'].map(h=>'<div class="cell time">'+h+'</div><div class="cell">'+data.events.filter(e=>e.day===dn&&parseInt(e.time)===parseInt(h)).map(e=>'<div class="cal-event '+(e.type==='class'?'':'green')+'"><b>'+esc(e.title)+'</b><br>'+esc(e.time)+'</div>').join('')+'</div>').join('');return}
  g.style.gridTemplateColumns='76px repeat(7,1fr)';g.innerHTML='<div class="cell head"></div>'+ds.map((d,i)=>'<div class="cell head">'+days[i]+'<br><small>'+d.getDate()+' '+d.toLocaleDateString('en-GB',{month:'short'})+'</small></div>').join('');
- ['08:00','10:00','12:00','14:00','16:00','18:00'].forEach(h=>{const n=parseInt(h);g.innerHTML+='<div class="cell time">'+h+'</div>'+days.map((day,i)=>'<div class="cell">'+(i>4?'<small class="sub">Weekend — no scheduled classes</small>':data.events.filter(e=>e.day===day&&parseInt(e.time)>=n&&parseInt(e.time)<n+2).map(e=>'<div class="cal-event '+(e.type==='class'?'':'green')+'"><b>'+esc(e.title)+'</b><br><small>'+esc(e.time)+'</small></div>').join(''))+'</div>').join('')});
+ ['08:00','10:00','12:00','14:00','16:00','18:00'].forEach(h=>{const n=parseInt(h);g.innerHTML+='<div class="cell time">'+h+'</div>'+days.map((day,i)=>'<div class="cell">'+(i>4?'<small class="sub">Weekend — no scheduled classes</small>':data.events.filter(e=>e.day===day&&parseInt(e.time)>=n&&parseInt(e.time)<n+2).map(e=>'<div class="cal-event '+(e.type==='class'?'':'green')+'"><b>'+esc(e.title)+'</b><br><small>'+esc(e.time)+'</small></div>').join('')||'<small class="sub">No event</small>')+'</div>').join('')});
 }
 function renderClasses(){document.getElementById('classCards').innerHTML=data.classes.map(c=>'<div class="card"><span class="tag">'+esc(c.day)+' · '+esc(c.time)+'</span><h3>'+esc(c.name)+'</h3><p class="sub">'+esc(c.teacher||'University')+'<br>'+esc(c.room)+'</p><button class="btn alt" onclick="go(\'calendar\')">View schedule</button></div>').join('')||'<div class="empty">No classes yet.</div>'}
 function renderTasks(){const todayKey=dateKey(now()),weekEnd=new Date(startOfWeek(now()));weekEnd.setDate(weekEnd.getDate()+6);const a=data.tasks.filter(t=>{const d=taskDueDate(t);return filter==='all'||(filter==='done'&&t.progress>=100)||(filter==='today'&&d&&dateKey(d)===todayKey)||(filter==='week'&&d&&d>=startOfWeek(now())&&d<new Date(weekEnd.getTime()+86400000)&&t.progress<100)});document.getElementById('taskList').innerHTML=a.map(t=>{const i=data.tasks.indexOf(t),d=taskDueDate(t);return '<div class="item" style="cursor:pointer" onclick="openTask('+i+')"><input type="checkbox" '+(t.progress>=100?'checked':'')+' onchange="event.stopPropagation();completeTask('+i+',this.checked)" style="width:auto"><div class="item-main"><b>'+esc(t.title)+'</b><small class="sub">'+esc(t.class||'Personal')+' · '+esc(t.type||'Task')+'</small><small class="sub">Due '+esc(d?dateLabel(d):dueText(t))+' · '+(t.progress>=100?'Completed':'Pending')+'</small><div class="progress" style="margin-top:7px"><i style="width:'+t.progress+'%"></i></div><small class="sub">'+t.progress+'% complete · '+(t.hours||1)+'h estimated</small></div><button class="btn alt" onclick="event.stopPropagation();editTask('+i+')">Edit</button><button class="btn danger" onclick="event.stopPropagation();deleteTask('+i+')">Delete</button></div>'}).join('')||'<div class="empty">No tasks here.</div>'}
@@ -377,7 +423,7 @@ function addReminder(){if(!requireWrite())return;const t=prompt('Reminder','Star
 function addGrade(){if(!requireWrite())return;const c=prompt('Class','CO7091'),n=prompt('Assessment','Coursework'),m=Number(prompt('Mark 0–100','70'));if(!c||!n||Number.isNaN(m))return;data.grades.push({class:c,name:n,mark:Math.max(0,Math.min(100,m)),credits:15});save();renderAll();toast('Result added')}
 function setDark(v){data.settings.dark=v;save();renderAll()}
 function saveSettings(){data.settings.view=document.getElementById('defaultView').value;data.settings.classReminders=document.getElementById('classReminders').checked;data.settings.deadlineReminders=document.getElementById('deadlineReminders').checked;save();toast('Settings saved')}
-function renderAll(){seedAuthDB();const p=currentProfile();if(!p){signOut();return}renderUniversityServices();renderAccount();renderMail();const current=now(),h=document.querySelector('#today .title');if(h)h.textContent=(current.getHours()<12?'Good morning, ':current.getHours()<18?'Good afternoon, ':'Good evening, ')+(p.name||'User').split(' ')[0];const clock=document.getElementById('liveDateTime');if(clock)clock.textContent=current.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+' · '+current.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});const initials=(p.role==='Guest'?'GU':(p.name||'U').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase());const av=document.getElementById('avatarBtn');if(av)av.textContent=initials;const tn=document.getElementById('topProfileName');if(tn)tn.textContent=p.name||'User';const tr=document.getElementById('topProfileRole');if(tr)tr.textContent=p.role==='Guest'?'Guest · Read only':(p.role||'Student')+' · University account';const sn=document.getElementById('settingsName');if(sn)sn.textContent=p.name||'Profile';const sa=document.getElementById('settingsAccount');if(sa)sa.textContent=p.email||'Guest account';const sr=document.getElementById('settingsRole');if(sr)sr.textContent=p.role||'Student';renderHome();renderCalendar();renderClasses();renderTasks();renderExams();renderGrades();renderReminders();renderActivity();renderCourses();renderAIBoard();renderAnalytics();applyA11y();const upcoming=data.exams.map(e=>({...e,days:daysUntil(e.date)})).filter(e=>e.days>=0).sort((a,b)=>a.days-b.days);const ec=document.getElementById('examCountdown');if(ec)ec.textContent=upcoming.length?upcoming[0].days+' days':'No upcoming exam';const et=ec?.nextElementSibling;if(et)et.textContent=upcoming[0]?.class||'—';document.getElementById('focusTotal').textContent=(data.focus/60).toFixed(1)+'h';document.getElementById('sessionCount').textContent=data.focusSessions||0;document.getElementById('dark').checked=data.settings.dark;document.getElementById('defaultView').value=data.settings.view;document.getElementById('classReminders').checked=data.settings.classReminders;document.getElementById('deadlineReminders').checked=data.settings.deadlineReminders;document.body.classList.toggle('dark',data.settings.dark)}
+function renderAll(){seedAuthDB();const p=currentProfile();if(!p){signOut();return}renderUniversityServices();renderAccount();renderMail();renderUniversityLayer();const current=now(),h=document.querySelector('#today .title');if(h)h.textContent=(current.getHours()<12?'Good morning, ':current.getHours()<18?'Good afternoon, ':'Good evening, ')+(p.name||'User').split(' ')[0];const clock=document.getElementById('liveDateTime');if(clock)clock.textContent=current.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+' · '+current.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});const initials=(p.role==='Guest'?'GU':(p.name||'U').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase());const av=document.getElementById('avatarBtn');if(av)av.textContent=initials;const tn=document.getElementById('topProfileName');if(tn)tn.textContent=p.name||'User';const tr=document.getElementById('topProfileRole');if(tr)tr.textContent=p.role==='Guest'?'Guest · Read only':(p.role||'Student')+' · University account';const sn=document.getElementById('settingsName');if(sn)sn.textContent=p.name||'Profile';const sa=document.getElementById('settingsAccount');if(sa)sa.textContent=p.email||'Guest account';const sr=document.getElementById('settingsRole');if(sr)sr.textContent=p.role||'Student';renderHome();renderCalendar();renderClasses();renderTasks();renderExams();renderGrades();renderReminders();renderActivity();renderCourses();renderAIBoard();renderAnalytics();applyA11y();const upcoming=data.exams.map(e=>({...e,days:daysUntil(e.date)})).filter(e=>e.days>=0).sort((a,b)=>a.days-b.days);const ec=document.getElementById('examCountdown');if(ec)ec.textContent=upcoming.length?upcoming[0].days+' days':'No upcoming exam';const et=ec?.nextElementSibling;if(et)et.textContent=upcoming[0]?.class||'—';document.getElementById('focusTotal').textContent=(data.focus/60).toFixed(1)+'h';document.getElementById('sessionCount').textContent=data.focusSessions||0;document.getElementById('dark').checked=data.settings.dark;document.getElementById('defaultView').value=data.settings.view;document.getElementById('classReminders').checked=data.settings.classReminders;document.getElementById('deadlineReminders').checked=data.settings.deadlineReminders;document.body.classList.toggle('dark',data.settings.dark)}
 document.getElementById('directoryQuery')?.addEventListener('input',renderDirectory);document.getElementById('search').addEventListener('input',e=>{const q=e.target.value.toLowerCase();if(q&&data.tasks.some(t=>(t.title+' '+t.class).toLowerCase().includes(q))){go('tasks');filter='all';renderTasks()}});
 if(localStorage.getItem(SESSION_KEY)&&currentProfile()){document.getElementById('auth').style.display='none';document.getElementById('app').style.display='block';loadUserData();renderAll()}
 if(location.hash&&currentProfile())go(location.hash.slice(1));

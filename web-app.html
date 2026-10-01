@@ -734,6 +734,26 @@ function sendLocalMessage(){
  const key=userDataKey()+'_sentMessages',sent=JSON.parse(localStorage.getItem(key)||'[]');sent.unshift({to,subject,body,date:dateLabel(now())});localStorage.setItem(key,JSON.stringify(sent));closeModal();toast('Message saved locally');renderMail();
 }
 
+function renderDirectory(){
+ const list=document.getElementById('directoryList');if(!list)return;
+ const people=[
+ ['Dr. Alex Morgan','Professor · CO7091 / CO7113','alex.morgan@uniflow.local'],
+ ['Dr. Priya Shah','Professor · CO7262','priya.shah@uniflow.local'],
+ ['Student Services','Registry, support and student guidance','services@uniflow.local'],
+ ['Academic Registry','Registration and academic records','registry@uniflow.local'],
+ ['IT Service Desk','Accounts and technical support','it@uniflow.local'],
+ ['Library Team','Library, journals and research resources','library@uniflow.local'],
+ ['Finance Office','Fees, payments and statements','finance@uniflow.local'],
+ ['Careers Service','Placements, internships and careers','careers@uniflow.local'],
+ ['Accessibility Centre','Adjustments and accessible learning','access@uniflow.local'],
+ ['Wellbeing Team','Wellbeing and student support','wellbeing@uniflow.local']
+ ];
+ const q=(document.getElementById('directoryQuery')?.value||'').toLowerCase().trim();
+ const rows=people.filter(x=>!q||x.join(' ').toLowerCase().includes(q));
+ list.innerHTML=rows.map(x=>'<div class="item"><span class="dot green"></span><span class="item-main"><b>'+esc(x[0])+'</b><small class="sub">'+esc(x[1])+' · '+esc(x[2])+'</small></span><button class="btn alt" onclick="composeLocalMessage(\''+x[2]+'\')">Message</button></div>').join('')||'<div class="empty">No directory matches found.</div>';
+}
+function directorySearch(){renderDirectory();toast('Directory updated');}
+
 function renderUniversityLayer(){renderDirectory();renderFinance();renderLibrary();renderAttendance();renderSupport();renderMail();renderUniversityServices()}
 
 let inclusiveAIMode='general';

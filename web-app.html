@@ -38,6 +38,7 @@
     <button type="button" class="btn" id="signInBtn">Sign in</button>
     <button type="button" class="btn alt" id="guestBtn">Continue as guest</button>
   </div>
+  <button type="button" class="btn alt" id="newUserBtn" style="width:100%;margin-top:10px">Create a new local user</button>
 </div>
 <div class="grid g2" style="margin-top:12px">
   <div class="card" style="padding:14px"><b>Student demo</b><small class="sub" style="display:block;margin-top:5px">dinakar@uniflow.local<br>demo1234</small></div>
@@ -143,9 +144,26 @@
     error('');enter(email);
   }
   function guestNow(){error('');enter('guest@uniflow.local')}
+  function registerNow(){
+    const name=(prompt('Full name','New UniFlow Student')||'').trim();
+    if(!name){error('Enter your name to create an account.');return}
+    const email=(prompt('University email','newstudent@uniflow.local')||'').trim().toLowerCase();
+    if(!/^\\S+@uniflow\\.local$/.test(email)){error('Use a university email ending in @uniflow.local.');return}
+    const pw=prompt('Create a password','student123');
+    if(!pw||pw.length<4){error('Password must contain at least 4 characters.');return}
+    const d=seed();
+    if(d.users[email]){error('That local university account already exists.');return}
+    d.users[email]={id:'UF-'+String(Object.keys(d.users).length+1).padStart(3,'0'),email,name,role:'Student',course:'MSc Artificial Intelligence',passwordHash:hash(pw),status:'active'};
+    save(d);
+    document.getElementById('email').value=email;
+    document.getElementById('password').value=pw;
+    error('');
+    enter(email);
+  }
   function bind(){
     document.getElementById('signInBtn')?.addEventListener('click',loginNow);
     document.getElementById('guestBtn')?.addEventListener('click',guestNow);
+    document.getElementById('newUserBtn')?.addEventListener('click',registerNow);
     document.getElementById('email')?.addEventListener('keydown',e=>{if(e.key==='Enter')loginNow()});
     document.getElementById('password')?.addEventListener('keydown',e=>{if(e.key==='Enter')loginNow()});
     seed();

@@ -36,7 +36,7 @@
   <div id="authError" class="sub" style="display:none;color:var(--red);margin-top:10px"></div>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px">
     <button type="button" class="btn" id="signInBtn">Sign in</button>
-    <button type="button" class="btn alt" id="guestBtn">Continue as guest</button>
+    <button type="button" class="btn alt" id="guestBtn" onclick="window.openGuestPortal()">Continue as guest</button>
   </div>
   <button type="button" class="btn alt" id="newUserBtn" style="width:100%;margin-top:10px">Create a new local user</button>
 </div>
@@ -45,7 +45,31 @@
   <div class="card" style="padding:14px"><b>Guest mode</b><small class="sub" style="display:block;margin-top:5px">Read-only access<br>No password required</small></div>
 </div>
 <p class="sub" style="font-size:11px;margin-top:14px">Coursework prototype · local browser authentication · not connected to University of Leicester SSO.</p>
-</div></div><div id="app" class="app">
+</div></div>
+<script>
+window.openGuestPortal=function(){
+  try{
+    const DB='uniflowUniversityDBV1',SESSION='uniflowLocalSessionV2';
+    let d={university:{id:'UNIFLOW-UNI',name:'UniFlow University'},users:{},sessions:{}};
+    try{d=JSON.parse(localStorage.getItem(DB)||'null')||d}catch(e){}
+    d.users=d.users||{};d.sessions=d.sessions||{};
+    d.users['guest@uniflow.local']={...(d.users['guest@uniflow.local']||{}),id:'UF-005',email:'guest@uniflow.local',name:'Guest User',role:'Guest',course:'Demo Access',status:'active'};
+    const sid='UF-GUEST-'+Date.now();
+    d.sessions[sid]={email:'guest@uniflow.local',createdAt:Date.now(),expiresAt:Date.now()+43200000};
+    localStorage.setItem(DB,JSON.stringify(d));
+    localStorage.setItem(SESSION,sid);
+    localStorage.setItem('uniflowSession','active');
+    localStorage.setItem('uniflowCurrentUser',JSON.stringify({email:'guest@uniflow.local'}));
+    const auth=document.getElementById('auth'),app=document.getElementById('app');
+    if(auth)auth.style.display='none';
+    if(app)app.style.display='block';
+    if(typeof window.renderAll==='function')window.renderAll();
+  }catch(e){
+    const el=document.getElementById('authError');if(el){el.textContent='Guest access could not be opened. Please try again.';el.style.display='block'}
+  }
+};
+</script>
+<div id="app" class="app">
 <aside class="sidebar"><div class="brand"><span class="mark">U</span>UniFlow</div><div class="nav">
 <small>My UniFlow</small><button data-go="today" class="active">⌂ Home</button><button data-go="activity">◉ Activity</button><button data-go="communications">✉ Mail & Messages</button><button data-go="courses">▣ Courses</button><button data-go="services">▤ Student Services</button>
 <small>Plan</small><button data-go="calendar">▦ Calendar</button><button data-go="tasks">✓ To Do</button><button data-go="exams">◇ Assessments</button><button data-go="grades">◎ Grades</button>

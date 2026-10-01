@@ -106,44 +106,13 @@ body.dark .uf-ai-suggestion,body.dark .uf-ai-mode{background:var(--panel);color:
 <script>
 window.uniflowShowError=function(message){var e=document.getElementById('authError');if(e){e.textContent='ERROR: '+message;e.style.display='block';e.scrollIntoView({block:'nearest'});}else{alert('ERROR: '+message);}};
 window.uniflowSignIn=function(){
- try{
-  var email=(document.getElementById('email')?.value||'').trim().toLowerCase();
-  var password=document.getElementById('password')?.value||'';
-  window.uniflowShowError('');
-  if(!email||!password){window.uniflowShowError('Enter your university email and password.');return;}
-  var DB='uniflowUniversityDBV1',SESSION='uniflowLocalSessionV2';
-  var d;
-  try{d=JSON.parse(localStorage.getItem(DB)||'null')||{university:{id:'UNIFLOW-UNI',name:'UniFlow University'},users:{},sessions:{}};}catch(e){window.uniflowShowError('Browser storage error: '+(e.message||e));return;}
-  d.users=d.users||{};d.sessions=d.sessions||{};
-  function hash(v){var h=2166136261;for(var i=0;i<String(v).length;i++){h^=String(v).charCodeAt(i);h=Math.imul(h,16777619)}return 'uf-'+(h>>>0).toString(16)}
-  var seeds=[
-   ['dinakar@uniflow.local','Dinakar Nayak','Student','MSc Artificial Intelligence',['CO7091','CO7262','CO7113'],'demo1234'],
-   ['student@uniflow.local','Aisha Khan','Student','MSc Artificial Intelligence',['CO7262'],'demo1234'],
-   ['professor@uniflow.local','Alex Morgan','Professor / Staff','Teaching Workspace',['CO7091','CO7113'],'professor123'],
-   ['admin@uniflow.local','UniFlow Administrator','Administrator','University Administration',['*'],'admin123'],
-   ['guest@uniflow.local','Guest User','Guest','Demo Access',[],'']
-  ];
-  seeds.forEach(function(s){
-   var old=d.users[s[0]]||{};
-   d.users[s[0]]=Object.assign({},old,{id:old.id||('UF-'+s[0].split('@')[0]),email:s[0],name:s[1],role:s[2],course:s[3],courseIds:s[4],passwordHash:hash(s[5]),status:'active'});
-  });
-  var u=d.users[email];
-  if(!u){localStorage.setItem(DB,JSON.stringify(d));window.uniflowShowError('Account not found: '+email);return;}
-  if(u.status!=='active'){window.uniflowShowError('This account is not active.');return;}
-  if(u.passwordHash!==hash(password)){localStorage.setItem(DB,JSON.stringify(d));window.uniflowShowError('Incorrect university email or password.');return;}
-  var sid='UFSESSION-'+Date.now();
-  d.sessions[sid]={email:email,createdAt:Date.now(),expiresAt:Date.now()+43200000};
-  localStorage.setItem(DB,JSON.stringify(d));
-  localStorage.setItem(SESSION,sid);
-  localStorage.setItem('uniflowSession','active');
-  localStorage.setItem('uniflowCurrentUser',JSON.stringify({email:email}));
-  var auth=document.getElementById('auth'),app=document.getElementById('app');
-  if(auth)auth.style.display='none';
-  if(app)app.style.display='block';
-  if(typeof window.loadUserData==='function')window.loadUserData();
-  if(typeof window.renderAll==='function')window.renderAll();
-  else window.uniflowShowError('Sign-in succeeded, but the UniFlow workspace script did not load.');
- }catch(err){console.error(err);window.uniflowShowError('Sign-in error: '+(err&&err.message?err.message:String(err)));}
+  try{
+    if(typeof window.login==='function'){ window.login(); return; }
+    var email=(document.getElementById('email')?.value||'').trim().toLowerCase();
+    var password=document.getElementById('password')?.value||'';
+    if(!email||!password){window.uniflowShowError('Enter your university email and password.');return;}
+    window.uniflowShowError('UniFlow sign-in is still loading. Please refresh once and try again.');
+  }catch(err){window.uniflowShowError('Sign-in error: '+(err&&err.message?err.message:String(err)));}
 };
 window.uniflowDiagnostics=function(){
  try{

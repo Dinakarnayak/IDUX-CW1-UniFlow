@@ -61,8 +61,8 @@ body.dark .uf-ai-suggestion,body.dark .uf-ai-mode{background:var(--panel);color:
   <div id="authError" class="sub" role="alert" aria-live="assertive" style="display:none;color:var(--red);margin-top:10px;padding:10px 12px;border:1px solid var(--red);border-radius:10px;background:rgba(255,80,80,.08)"></div>
   <button type="button" class="btn alt" onclick="window.uniflowDiagnostics()" style="width:100%;margin-top:10px">Run login diagnostics</button>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px">
-    <button type="button" class="btn" id="signInBtn" onclick="window.uniflowSignIn()">Sign in</button>
-    <button type="button" class="btn alt" id="guestBtn" onclick="window.openGuestPortal()">Continue as guest</button>
+    <button type="button" class="btn" id="signInBtn" onclick="return window.uniflowSignIn()">Sign in</button>
+    <button type="button" class="btn alt" id="guestBtn" onclick="return window.openGuestPortal()">Continue as guest</button>
   </div>
   <button type="button" class="btn alt" id="newUserBtn" style="width:100%;margin-top:10px">Create a new local user</button>
 </div>
@@ -495,8 +495,8 @@ function enterApp(){
   toast('UniFlow could not open the workspace. Please try again.');
  }
 }
-document.getElementById('email')?.addEventListener('keydown',e=>{if(e.key==='Enter')login()});
-document.getElementById('password')?.addEventListener('keydown',e=>{if(e.key==='Enter')login()});
+document.getElementById('email')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();window.uniflowSignIn()}});
+document.getElementById('password')?.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();window.uniflowSignIn()}});
 function showRegistration(){
  const auth=document.getElementById('auth'),reg=document.getElementById('registration');
  if(auth)auth.style.display='none';

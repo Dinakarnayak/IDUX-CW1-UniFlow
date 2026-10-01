@@ -19,7 +19,32 @@
 </style>
 </head>
 <body>
-<div id="auth" class="auth"><div class="authbox"><div class="brand"><span class="mark">U</span>UniFlow</div><div class="eyebrow">UniFlow University · Local Authorisation</div><h1>Sign in to your university.</h1><p class="sub">A self-contained university portal with local institutional accounts, timetable, learning, services, messaging and AI assistance.</p><div class="label">University email</div><input id="email" type="email" autocomplete="username" value="dinakar@uniflow.local" placeholder="name@uniflow.local"><div class="label">Password</div><input id="password" type="password" autocomplete="current-password" value="demo1234" placeholder="Password"><div id="authError" class="sub" style="display:none;color:var(--red);margin-top:10px"></div><div style="display:flex;gap:8px;margin-top:16px"><button type="button" class="btn" style="flex:1" id="signInBtn">Sign in</button><button type="button" class="btn alt" style="flex:1" id="guestBtn">Guest access</button></div><div class="card" style="margin-top:16px;padding:13px;background:var(--soft)"><b>Local university directory</b><small class="sub" style="display:block;margin-top:5px">Student, staff and administrator accounts are stored locally in this browser. No university SSO is required.</small></div><p class="sub" style="font-size:11px;margin-top:14px">Student: dinakar@uniflow.local / demo1234 · Staff: professor@uniflow.local / professor123 · Admin: admin@uniflow.local / admin123</p></div></div><div id="app" class="app">
+<div id="auth" class="auth">
+<div class="authbox" style="max-width:520px">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:18px">
+  <div class="brand"><span class="mark">U</span>UniFlow</div>
+  <span class="tag green">LOCAL UNIVERSITY</span>
+</div>
+<div class="eyebrow" style="margin-top:28px">Student portal</div>
+<h1 style="font-size:34px;line-height:1.08;margin:8px 0">Welcome to UniFlow.</h1>
+<p class="sub">Sign in to your university workspace for courses, timetable, assessments, messages, finance, library, attendance and student support.</p>
+<div class="card" style="margin-top:22px;padding:18px;background:var(--soft)">
+  <div class="label">University email</div>
+  <input id="email" type="email" autocomplete="username" value="dinakar@uniflow.local" placeholder="name@uniflow.local">
+  <div class="label" style="margin-top:12px">Password</div>
+  <input id="password" type="password" autocomplete="current-password" value="demo1234" placeholder="Password">
+  <div id="authError" class="sub" style="display:none;color:var(--red);margin-top:10px"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px">
+    <button type="button" class="btn" id="signInBtn">Sign in</button>
+    <button type="button" class="btn alt" id="guestBtn">Continue as guest</button>
+  </div>
+</div>
+<div class="grid g2" style="margin-top:12px">
+  <div class="card" style="padding:14px"><b>Student demo</b><small class="sub" style="display:block;margin-top:5px">dinakar@uniflow.local<br>demo1234</small></div>
+  <div class="card" style="padding:14px"><b>Guest mode</b><small class="sub" style="display:block;margin-top:5px">Read-only access<br>No password required</small></div>
+</div>
+<p class="sub" style="font-size:11px;margin-top:14px">Coursework prototype · local browser authentication · not connected to University of Leicester SSO.</p>
+</div></div><div id="app" class="app">
 <aside class="sidebar"><div class="brand"><span class="mark">U</span>UniFlow</div><div class="nav">
 <small>My UniFlow</small><button data-go="today" class="active">⌂ Home</button><button data-go="activity">◉ Activity</button><button data-go="communications">✉ Mail & Messages</button><button data-go="courses">▣ Courses</button><button data-go="services">▤ Student Services</button>
 <small>Plan</small><button data-go="calendar">▦ Calendar</button><button data-go="tasks">✓ To Do</button><button data-go="exams">◇ Assessments</button><button data-go="grades">◎ Grades</button>
@@ -85,7 +110,50 @@
 <div class="grid g4 mt"><div class="card stat"><span class="sub">Open tasks</span><b id="anTasks">0</b><span class="tag">Across courses</span></div><div class="card stat"><span class="sub">Completed</span><b id="anDone">0%</b><span class="tag green">Progress</span></div><div class="card stat"><span class="sub">Focus sessions</span><b id="anFocus">0</b><span class="tag">Recorded</span></div><div class="card stat"><span class="sub">Upcoming assessments</span><b id="anExams">0</b><span class="tag red">Plan ahead</span></div></div>
 <div class="grid g2 mt"><div class="card"><h3>Module progress</h3><div id="moduleAnalytics" class="list"></div></div><div class="card"><h3>AI recommendations</h3><div id="analyticsAdvice" class="list"></div></div></div>
 </section>
-<section id="settings" class="screen"><div class="eyebrow">Account & preferences</div><h1 class="title">Settings</h1><div class="card mt" style="max-width:700px"><div class="row"><span><b id="settingsName">Profile</b><br><small class="sub" id="settingsAccount">Local account</small></span><button class="btn alt" onclick="openProfile()">Edit profile</button></div><div class="item"><span class="item-main"><b>Account role</b><small class="sub" id="settingsRole">Student</small></span></div><div class="item"><span class="item-main"><b>Session</b><small class="sub">Sign out from this device.</small></span><button class="btn danger" onclick="signOut()">Sign out</button></div></div><div class="card mt" style="max-width:700px"><div class="row"><span><b>Dark mode</b><br><small class="sub">Use a darker interface for evening study.</small></span><input id="dark" type="checkbox" style="width:auto" onchange="setDark(this.checked)"></div><div class="item"><span class="item-main"><b>Default calendar view</b><small class="sub">Choose how your week opens.</small></span><select id="defaultView" onchange="saveSettings()"><option>Week</option><option>Day</option><option>Month</option></select></div><div class="item"><span class="item-main"><b>Class reminders</b><small class="sub">Receive a reminder before classes.</small></span><input id="classReminders" type="checkbox" checked onchange="saveSettings()" style="width:auto"></div><div class="item"><span class="item-main"><b>Deadline reminders</b><small class="sub">Receive reminders before tasks are due.</small></span><input id="deadlineReminders" type="checkbox" checked onchange="saveSettings()" style="width:auto"></div></div></section>
+<section id="settings" class="screen"><div class="eyebrow">Account & preferences</div><h1 class="title">Settings</h1><div class="card mt" style="max-width:700px"><div class="row"><span><b id="settingsName">Profile</b><br><small class="sub" id="settingsAccount">Local account</small></span><button class="btn alt" onclick="openProfile()">Edit profile</button></div><div class="item"><span class="item-main"><b>Account role</b><small class="sub" id="settingsRole">Student</small></span></div><div class="item"><span class="item-main"><b>Session</b><small class="sub">Sign out from this device.</small></span><button class="btn danger" onclick="signOut()">Sign out</button></div></div><div class="card mt" style="max-width:700px"><div class="row"><span><b>Dark mode</b><br><small class="sub">Use a darker interface for evening study.</small></span><input id="dark" type="checkbox" style="width:auto" onchange="setDark(this.checked)"></div><div class="item"><span class="item-main"><b>Default calendar view</b><small class="sub">Choose how your week opens.</small></span><select id="defaultView" onchange="saveSettings()"><option>Week</option><option>Day</option><option>Month</option></select></div><div class="item"><span class="item-main"><b>Class reminders</b><small class="sub">Receive a reminder before classes.</small></span><input id="classReminders" type="checkbox" checked onchange="saveSettings()" style="width:auto"></div><div class="item"><span class="item-main"><b>Deadline reminders</b><small class="sub">Receiv<script>
+(function(){
+  const DB='uniflowUniversityDBV1';
+  const SESSION='uniflowLocalSessionV2';
+  const TTL=43200000;
+  const ACCOUNTS={
+    'dinakar@uniflow.local':{name:'Dinakar Nayak',role:'Student',course:'MSc Artificial Intelligence',password:'demo1234'},
+    'student@uniflow.local':{name:'Aisha Khan',role:'Student',course:'MSc Artificial Intelligence',password:'demo1234'},
+    'professor@uniflow.local':{name:'Alex Morgan',role:'Professor / Staff',course:'Teaching Workspace',password:'professor123'},
+    'admin@uniflow.local':{name:'UniFlow Administrator',role:'Administrator',course:'University Administration',password:'admin123'},
+    'guest@uniflow.local':{name:'Guest User',role:'Guest',course:'Demo Access',password:''}
+  };
+  function hash(v){let h=2166136261,s=String(v||'');for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return 'uf-'+(h>>>0).toString(16)}
+  function db(){try{return JSON.parse(localStorage.getItem(DB)||'null')||{university:{id:'UNIFLOW-UNI',name:'UniFlow University'},users:{},sessions:{}}}catch(e){return {university:{id:'UNIFLOW-UNI',name:'UniFlow University'},users:{},sessions:{}}}}
+  function save(d){localStorage.setItem(DB,JSON.stringify(d))}
+  function seed(){const d=db();d.users=d.users||{};Object.keys(ACCOUNTS).forEach((email,i)=>{const a=ACCOUNTS[email];d.users[email]={id:'UF-'+String(i+1).padStart(3,'0'),email,name:a.name,role:a.role,course:a.course,passwordHash:hash(a.password),status:'active'}});d.sessions=d.sessions||{};save(d);return d}
+  function enter(email){
+    const d=seed(),sid='UFSESSION-'+Date.now()+'-'+Math.random().toString(36).slice(2);
+    d.sessions[sid]={email,createdAt:Date.now(),expiresAt:Date.now()+TTL};save(d);
+    localStorage.setItem(SESSION,sid);localStorage.setItem('uniflowSession','active');
+    const u=d.users[email];localStorage.setItem('uniflowCurrentUser',JSON.stringify({...u,key:email}));
+    const auth=document.getElementById('auth'),app=document.getElementById('app');
+    if(auth)auth.style.display='none';if(app)app.style.display='block';
+    try{if(typeof window.loadUserData==='function')window.loadUserData();if(typeof window.renderAll==='function')window.renderAll()}catch(e){console.error(e)}
+  }
+  function error(msg){const e=document.getElementById('authError');if(e){e.textContent=msg;e.style.display='block'}}
+  function loginNow(){
+    const email=(document.getElementById('email')?.value||'').trim().toLowerCase(),pw=document.getElementById('password')?.value||'';
+    const a=ACCOUNTS[email];if(!a){error('Account not found. Use the demo student account or Guest access.');return}
+    if(hash(pw)!==hash(a.password)){error('Incorrect password.');return}
+    error('');enter(email);
+  }
+  function guestNow(){error('');enter('guest@uniflow.local')}
+  function bind(){
+    document.getElementById('signInBtn')?.addEventListener('click',loginNow);
+    document.getElementById('guestBtn')?.addEventListener('click',guestNow);
+    document.getElementById('email')?.addEventListener('keydown',e=>{if(e.key==='Enter')loginNow()});
+    document.getElementById('password')?.addEventListener('keydown',e=>{if(e.key==='Enter')loginNow()});
+    seed();
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',bind);else bind();
+})();
+</script>
+e reminders before tasks are due.</small></span><input id="deadlineReminders" type="checkbox" checked onchange="saveSettings()" style="width:auto"></div></div></section>
 </div></main></div>
 <div id="modal" class="modal hidden"><div class="modalbox"><div class="row"><h2 id="modalTitle">Add</h2><button class="btn alt" onclick="closeModal()">Close</button></div><div id="modalBody"></div></div></div><div id="toast" class="toast"></div>
 <script>

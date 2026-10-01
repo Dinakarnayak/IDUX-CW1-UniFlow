@@ -107,12 +107,19 @@ body.dark .uf-ai-suggestion,body.dark .uf-ai-mode{background:var(--panel);color:
 window.uniflowShowError=function(message){var e=document.getElementById('authError');if(e){e.textContent='ERROR: '+message;e.style.display='block';e.scrollIntoView({block:'nearest'});}else{alert('ERROR: '+message);}};
 window.uniflowSignIn=function(){
   try{
-    if(typeof window.login==='function'){ window.login(); return; }
     var email=(document.getElementById('email')?.value||'').trim().toLowerCase();
     var password=document.getElementById('password')?.value||'';
-    if(!email||!password){window.uniflowShowError('Enter your university email and password.');return;}
-    window.uniflowShowError('UniFlow sign-in is still loading. Please refresh once and try again.');
-  }catch(err){window.uniflowShowError('Sign-in error: '+(err&&err.message?err.message:String(err)));}
+    if(!email){window.uniflowShowError('Please enter your university email.');return;}
+    if(!password){window.uniflowShowError('Please enter your password.');return;}
+    if(typeof window.login==='function'){
+      window.login();
+      return;
+    }
+    window.uniflowShowError('Sign-in is unavailable because the UniFlow authentication module did not load.');
+  }catch(err){
+    console.error('UniFlow sign-in error',err);
+    window.uniflowShowError('Sign-in error: '+(err&&err.message?err.message:String(err)));
+  }
 };
 window.uniflowDiagnostics=function(){
  try{
@@ -459,8 +466,6 @@ function enterApp(){
   toast('UniFlow could not open the workspace. Please try again.');
  }
 }
-document.getElementById('signInBtn')?.addEventListener('click',()=>login());
-document.getElementById('guestBtn')?.addEventListener('click',()=>guestLogin());
 document.getElementById('email')?.addEventListener('keydown',e=>{if(e.key==='Enter')login()});
 document.getElementById('password')?.addEventListener('keydown',e=>{if(e.key==='Enter')login()});
 function showRegistration(){

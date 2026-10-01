@@ -44,176 +44,31 @@ body.dark .uf-ai-suggestion,body.dark .uf-ai-mode{background:var(--panel);color:
 </style>
 </head>
 <body>
-<div id="auth" class="auth">
+<div id="auth" class="auth" style="display:grid">
 <div class="authbox" style="max-width:520px">
-<div style="display:flex;align-items:center;justify-content:space-between;gap:18px">
-  <div class="brand"><span class="mark">U</span>UniFlow</div>
-  <span class="tag green">LOCAL UNIVERSITY</span>
-</div>
-<div class="eyebrow" style="margin-top:28px">Student portal</div>
-<h1 style="font-size:34px;line-height:1.08;margin:8px 0">Welcome to UniFlow.</h1>
-<p class="sub">Sign in to your university workspace for courses, timetable, assessments, messages, finance, library, attendance and student support.</p>
-<div class="card" style="margin-top:22px;padding:18px;background:var(--soft)">
-  <div class="label">University email</div>
-  <input id="email" type="email" autocomplete="username" value="dinakar@uniflow.local" placeholder="name@uniflow.local">
-  <div class="label" style="margin-top:12px">Password</div>
-  <input id="password" type="password" autocomplete="current-password" value="demo1234" placeholder="Password">
-  <div id="authError" class="sub" role="alert" aria-live="assertive" style="display:none;color:var(--red);margin-top:10px;padding:10px 12px;border:1px solid var(--red);border-radius:10px;background:rgba(255,80,80,.08)"></div>
-  <button type="button" class="btn alt" onclick="window.uniflowDiagnostics()" style="width:100%;margin-top:10px">Run login diagnostics</button>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px">
-    <button type="button" class="btn" id="signInBtn" onclick="return window.uniflowSignIn()">Sign in</button>
-    <button type="button" class="btn alt" id="guestBtn" onclick="return window.openGuestPortal()">Continue as guest</button>
+  <div style="display:flex;align-items:center;justify-content:space-between;gap:18px">
+    <div class="brand"><span class="mark">U</span>UniFlow</div>
+    <span class="tag green">LOCAL UNIVERSITY</span>
   </div>
-  <button type="button" class="btn alt" id="newUserBtn" style="width:100%;margin-top:10px">Create a new local user</button>
-</div>
-<div class="grid g2" style="margin-top:12px">
-  <div class="card" style="padding:14px"><b>Student demo</b><small class="sub" style="display:block;margin-top:5px">dinakar@uniflow.local<br>demo1234</small></div>
-  <div class="card" style="padding:14px"><b>Guest mode</b><small class="sub" style="display:block;margin-top:5px">Read-only access<br>No password required</small></div>
-</div>
-<p class="sub" style="font-size:11px;margin-top:14px">Coursework prototype · local browser authentication · not connected to University of Leicester SSO.</p>
-</div></div>
-<div id="registration" style="display:none;min-height:100vh;background:var(--bg);padding:40px 20px">
- <div style="max-width:760px;margin:0 auto">
-  <div class="row" style="margin-bottom:22px">
-   <div><div class="eyebrow">UniFlow University</div><h1 class="title">Create your local account</h1><p class="sub">Complete your university profile to create a local UniFlow account.</p></div>
-   <button type="button" class="btn alt" onclick="hideRegistration()">← Back to sign in</button>
+  <div class="eyebrow" style="margin-top:28px">Student portal</div>
+  <h1 style="font-size:34px;line-height:1.08;margin:8px 0">Welcome to UniFlow.</h1>
+  <p class="sub">Sign in to your university workspace.</p>
+  <div class="card" style="margin-top:22px;padding:18px;background:var(--soft)">
+    <div class="label">University email or ID</div>
+    <input id="freshLoginEmail" type="text" autocomplete="username" placeholder="dinakar@uniflow.local or dinakar">
+    <div class="label" style="margin-top:12px">Password</div>
+    <input id="freshLoginPassword" type="password" autocomplete="current-password" placeholder="Password">
+    <div id="freshLoginError" role="alert" aria-live="assertive" style="display:none;color:var(--red);margin-top:10px;padding:10px 12px;border:1px solid var(--red);border-radius:10px;background:rgba(255,80,80,.08)"></div>
+    <button type="button" id="freshSignIn" class="btn" style="width:100%;margin-top:16px">Sign in</button>
+    <button type="button" id="freshGuest" class="btn alt" style="width:100%;margin-top:10px">Continue as guest</button>
   </div>
-  <div class="card">
-   <div class="eyebrow">01 · Personal details</div>
-   <div class="grid g2 mt">
-    <div><div class="label">Full name *</div><input id="regName" placeholder="e.g. Dinakar Nayak" autocomplete="name"></div>
-    <div><div class="label">Student / Staff ID *</div><input id="regStudentId" placeholder="e.g. UF-STU-1001"></div>
-   </div>
-   <div class="label" style="margin-top:14px">University email *</div>
-   <input id="regEmail" type="email" placeholder="name@uniflow.local" autocomplete="email">
-   <div class="grid g2" style="margin-top:18px">
-    <div><div class="label">Account type *</div><select id="regRole"><option value="Student">Student</option><option value="Professor / Staff">Professor / Staff</option></select></div>
-    <div><div class="label">Course / workspace *</div><select id="regCourse"><option value="">Select one</option><option value="MSc Artificial Intelligence">MSc Artificial Intelligence</option><option value="Teaching Workspace">Teaching Workspace</option></select></div>
-   </div>
+  <div class="grid g2" style="margin-top:12px">
+    <div class="card" style="padding:14px"><b>Student demo</b><small class="sub" style="display:block;margin-top:5px">dinakar@uniflow.local<br>demo1234</small></div>
+    <div class="card" style="padding:14px"><b>Guest</b><small class="sub" style="display:block;margin-top:5px">Catalogue only</small></div>
   </div>
-  <div class="card mt">
-   <div class="eyebrow">02 · Security</div>
-   <div class="grid g2 mt">
-    <div><div class="label">Password *</div><input id="regPassword" type="password" placeholder="At least 6 characters" autocomplete="new-password"></div>
-    <div><div class="label">Confirm password *</div><input id="regConfirm" type="password" placeholder="Repeat password" autocomplete="new-password"></div>
-   </div>
-   <div id="registrationError" role="alert" aria-live="assertive" style="display:none;color:var(--red);margin-top:14px;padding:11px;border:1px solid var(--red);border-radius:10px;background:rgba(255,80,80,.08)"></div>
-   <button type="button" class="btn" style="width:100%;margin-top:18px" onclick="createRegisteredUser()">Create local account</button>
-   <p class="sub" style="margin-top:10px;font-size:12px">This is a coursework prototype. The account is stored locally in this browser and is not connected to university SSO.</p>
-  </div>
- </div>
+  <p class="sub" style="font-size:11px;margin-top:14px">Coursework prototype · local browser data · no university SSO.</p>
 </div>
-<script>
-window.uniflowShowError=function(message){var e=document.getElementById('authError');if(e){e.textContent='ERROR: '+message;e.style.display='block';e.scrollIntoView({block:'nearest'});}else{alert('ERROR: '+message);}};
-window.uniflowSignIn=function(){
-  try{
-    var entered=(document.getElementById('email')?.value||'').trim().toLowerCase();
-    var password=document.getElementById('password')?.value||'';
-    if(!entered){window.uniflowShowError('Enter your university email or student/staff ID.');return false;}
-    if(!password){window.uniflowShowError('Enter your password.');return false;}
-    var DB='uniflowUniversityDBV1', SESSION='uniflowLocalSessionV2';
-    var d;
-    try{d=JSON.parse(localStorage.getItem(DB)||'null')}catch(e){d=null}
-    if(!d||!d.users){window.uniflowShowError('UniFlow account database is unavailable. Please refresh the page.');return false;}
-    var email=entered, u=d.users[email];
-    if(!u){
-      var users=Object.values(d.users);
-      u=users.find(function(x){
-        var e=String(x.email||'').toLowerCase();
-        var id=String(x.studentId||x.staffId||x.userId||x.id||'').toLowerCase();
-        return e===entered || id===entered || e.split('@')[0]===entered;
-      });
-      if(u)email=String(u.email||'').toLowerCase();
-    }
-    if(!u||!email){window.uniflowShowError('Student/staff account not found. Guest access is separate — use Continue as guest only when you want Guest mode.');return false;}
-    var h=2166136261,s=String(password);
-    for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}
-    var hash='uf-'+(h>>>0).toString(16);
-    if(u.status!=='active'||u.passwordHash!==hash){window.uniflowShowError('Incorrect password for '+email+'.');return false;}
-    d.sessions=d.sessions||{};
-    Object.keys(d.sessions).forEach(function(k){if(d.sessions[k]?.email==='guest@uniflow.local')delete d.sessions[k];});
-    var sid='UFSESSION-'+Date.now();
-    d.sessions[sid]={email:email,createdAt:Date.now(),expiresAt:Date.now()+43200000};
-    localStorage.setItem(DB,JSON.stringify(d));
-    localStorage.setItem(SESSION,sid);
-    localStorage.setItem('uniflowSession','active');
-    localStorage.setItem('uniflowCurrentUser',JSON.stringify({email:email}));
-    /* Hard verification: a normal login may never silently become Guest. */
-    var verifyRaw=localStorage.getItem(DB),verifyDb;
-    try{verifyDb=JSON.parse(verifyRaw||'null')}catch(e){verifyDb=null}
-    var verifySession=verifyDb&&verifyDb.sessions?verifyDb.sessions[sid]:null;
-    var verifyEmail=String(verifySession&&verifySession.email||'').toLowerCase();
-    if(verifyEmail!==String(email).toLowerCase()){
-      localStorage.removeItem(SESSION);
-      localStorage.removeItem('uniflowSession');
-      localStorage.removeItem('uniflowCurrentUser');
-      window.uniflowShowError('Login session verification failed. Your account was not switched to Guest. Please sign in again.');
-      return false;
-    }
-    if(verifyEmail==='guest@uniflow.local'){
-      localStorage.removeItem(SESSION);
-      localStorage.removeItem('uniflowSession');
-      localStorage.removeItem('uniflowCurrentUser');
-      window.uniflowShowError('Guest mode can only be entered through Continue as guest.');
-      return false;
-    }
-    var auth=document.getElementById('auth'),app=document.getElementById('app');
-    if(auth)auth.style.display='none';
-    if(app)app.style.display='block';
-    if(typeof window.loadUserData==='function')window.loadUserData();
-    if(typeof window.renderAll==='function')window.renderAll();
-    return false;
-  }catch(err){
-    console.error('UniFlow sign-in error',err);
-    window.uniflowShowError('Sign-in error: '+(err&&err.message?err.message:String(err)));
-    return false;
-  }
-};
-window.uniflowDiagnostics=function(){
- try{
-  var checks=[];
-  checks.push('Browser JavaScript: OK');
-  checks.push('Local storage: '+(typeof localStorage==='undefined'?'FAILED':'OK'));
-  checks.push('Sign-in function: '+(typeof window.login==='function'?'OK':'NOT LOADED'));
-  checks.push('Workspace function: '+(typeof window.enterApp==='function'?'OK':'NOT LOADED'));
-  window.uniflowShowError('Diagnostics — '+checks.join(' | '));
- }catch(err){window.uniflowShowError(err.message);}
-};
-window.openGuestPortal=function(){
-  /* Explicit guest action only: this function is never called during startup. */
-  try{
-    const DB='uniflowUniversityDBV1',SESSION='uniflowLocalSessionV2';
-    let d={university:{id:'UNIFLOW-UNI',name:'UniFlow University'},users:{},sessions:{}};
-    try{d=JSON.parse(localStorage.getItem(DB)||'null')||d}catch(e){}
-    d.users=d.users||{};d.sessions=d.sessions||{};
-    d.users['guest@uniflow.local']={...(d.users['guest@uniflow.local']||{}),id:'UF-005',email:'guest@uniflow.local',name:'Guest User',role:'Guest',course:'Demo Access',status:'active'};
-    const sid='UF-GUEST-'+Date.now();
-    d.sessions[sid]={email:'guest@uniflow.local',createdAt:Date.now(),expiresAt:Date.now()+43200000};
-    localStorage.setItem(DB,JSON.stringify(d));
-    localStorage.setItem(SESSION,sid);
-    localStorage.setItem('uniflowSession','active');
-    localStorage.setItem('uniflowCurrentUser',JSON.stringify({email:'guest@uniflow.local'}));
-    const auth=document.getElementById('auth'),app=document.getElementById('app');
-    if(auth)auth.style.display='none';
-    if(app)app.style.display='block';
-    if(typeof window.renderAll==='function')window.renderAll();
-  }catch(e){
-    const el=document.getElementById('authError');if(el){el.textContent='Guest access could not be opened. Please try again.';el.style.display='block'}
-  }
-};
-window.go=window.go||function(id){
- try{
-  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
-  var el=document.getElementById(id);
-  if(!el){window.uniflowShowError&&window.uniflowShowError('Page "'+id+'" could not be found.');return;}
-  el.classList.add('active');
-  document.querySelectorAll('.nav button').forEach(function(b){b.classList.toggle('active',b.getAttribute('data-go')===id)});
-  try{history.replaceState(null,'','#'+id)}catch(e){}
-  if(typeof window.renderAll==='function'){try{window.renderAll()}catch(e){console.error(e);window.uniflowShowError&&window.uniflowShowError('The "'+id+'" page opened, but its data could not be refreshed: '+(e.message||e));}}
- }catch(e){console.error(e);window.uniflowShowError&&window.uniflowShowError('Navigation error: '+(e.message||e));}
-};
-window.ufNavigate=window.go;
-</script>
+</div>
 <div id="app" class="app">
 <aside class="sidebar"><div class="brand"><span class="mark">U</span>UniFlow</div><div class="nav">
 <small>My UniFlow</small><button data-go="today" onclick="window.ufNavigate('today')" class="active">⌂ Home</button><button data-go="activity" onclick="window.ufNavigate('activity')">◉ Activity</button><button data-go="communications" onclick="window.ufNavigate('communications')">✉ Mail & Messages</button><button data-go="courses" onclick="window.ufNavigate('courses')">▣ Courses</button><button data-go="account" onclick="window.ufNavigate('account')">◉ Account</button><button data-go="services" onclick="window.ufNavigate('services')">▤ Student Services</button>
@@ -992,89 +847,39 @@ function mailData(){
  return arr;
 }
 
-// ===== UniFlow Fresh Authentication Controller V3 =====
+// ===== UniFlow Standalone Login Controller =====
 (function(){
-  const AUTH_V3='uniflowFreshAuthV3';
-  const DB='uniflowUniversityDBV1';
-  const SESSION='uniflowLocalSessionV2';
-  const TTL=43200000;
-  function hash(p){let h=2166136261;String(p).split('').forEach(ch=>{h^=ch.charCodeAt(0);h=Math.imul(h,16777619)});return 'uf-'+(h>>>0).toString(16)}
-  function db(){try{return JSON.parse(localStorage.getItem(DB)||'null')||{users:{},sessions:{}}}catch(e){return {users:{},sessions:{}}}}
-  function save(d){localStorage.setItem(DB,JSON.stringify(d))}
-  function clearAll(){
-    const d=db(); d.sessions={}; save(d);
-    localStorage.removeItem(SESSION);
-    localStorage.removeItem('uniflowSession');
-    localStorage.removeItem('uniflowCurrentUser');
-    sessionStorage.removeItem(AUTH_V3);
-  }
-  function showAuth(msg){
-    const auth=document.getElementById('auth'),app=document.getElementById('app');
-    if(auth)auth.style.display='grid'; if(app)app.style.display='none';
-    if(msg){const e=document.getElementById('authError');if(e){e.textContent=msg;e.style.display='block'}}
-  }
-  function showApp(){
-    const auth=document.getElementById('auth'),app=document.getElementById('app');
-    if(auth)auth.style.display='none'; if(app)app.style.display='block';
-    if(typeof loadUserData==='function')loadUserData();
-    if(typeof renderAll==='function')renderAll();
-  }
-  window.uniflowFreshSignIn=function(){
-    const input=(document.getElementById('email')?.value||'').trim().toLowerCase();
-    const pass=document.getElementById('password')?.value||'';
-    const d=db();
-    let u=d.users[input];
-    if(!u){
-      u=Object.values(d.users).find(x=>String(x.email||'').toLowerCase()===input || String(x.studentId||x.staffId||x.userId||x.id||'').toLowerCase()===input || String(x.email||'').toLowerCase().split('@')[0]===input);
-    }
-    if(!u){showAuth('Student account not found. Guest access is separate.');return false}
-    const email=String(u.email||'').toLowerCase();
-    if(email==='guest@uniflow.local'){showAuth('Use Continue as guest only for Guest mode.');return false}
-    if(u.status!=='active'||u.passwordHash!==hash(pass)){showAuth('Incorrect university password.');return false}
-    d.sessions={};
-    const sid='UFV3-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
-    d.sessions[sid]={email,createdAt:Date.now(),expiresAt:Date.now()+TTL,authVersion:'v3'};
-    save(d);
-    localStorage.setItem(SESSION,sid);
-    localStorage.setItem('uniflowSession','active');
-    localStorage.setItem('uniflowCurrentUser',JSON.stringify({email}));
-    sessionStorage.setItem(AUTH_V3,email);
-    showApp();
-    return false;
-  };
-  window.uniflowFreshGuest=function(){
-    const d=db();
-    const u=d.users['guest@uniflow.local'];
-    if(!u){showAuth('Guest account is unavailable.');return false}
-    d.sessions={};
-    const sid='UFV3-GUEST-'+Date.now();
-    d.sessions[sid]={email:'guest@uniflow.local',createdAt:Date.now(),expiresAt:Date.now()+TTL,authVersion:'v3'};
-    save(d);
-    localStorage.setItem(SESSION,sid);
-    localStorage.setItem('uniflowSession','active');
-    localStorage.setItem('uniflowCurrentUser',JSON.stringify({email:'guest@uniflow.local'}));
-    sessionStorage.setItem(AUTH_V3,'guest@uniflow.local');
-    showApp();
-    return false;
-  };
-  window.uniflowFreshSignOut=function(){
-    clearAll();
-    showAuth('');
-    const e=document.getElementById('email'),p=document.getElementById('password');
-    if(e)e.value=''; if(p)p.value='';
-    return false;
-  };
-  function boot(){
-    const sign=document.getElementById('signInBtn'),guest=document.getElementById('guestBtn');
-    if(sign)sign.onclick=window.uniflowFreshSignIn;
-    if(guest)guest.onclick=window.uniflowFreshGuest;
-    document.querySelectorAll('button[onclick="signOut()"]').forEach(b=>b.onclick=window.uniflowFreshSignOut);
-    // Remove any previous Guest/student session before a fresh browser visit.
-    // Fresh page load: never inherit an old Guest/student session.
-    // This prevents the legacy startup controller from sending the user into Guest mode.
-    clearAll();
-    showAuth('');
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-})();
-</script></body></html>
+ function error(msg){var e=document.getElementById('freshLoginError');if(e){e.textContent=msg;e.style.display='block';}}
+ function clearError(){var e=document.getElementById('freshLoginError');if(e){e.textContent='';e.style.display='none';}}
+ function hash(p){var h=2166136261;String(p).split('').forEach(function(ch){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)});return 'uf-'+(h>>>0).toString(16)}
+ function db(){try{return JSON.parse(localStorage.getItem('uniflowUniversityDBV1')||'null')||{users:{},sessions:{}}}catch(e){return {users:{},sessions:{}}}}
+ function save(d){localStorage.setItem('uniflowUniversityDBV1',JSON.stringify(d))}
+ function enter(email){
+   var d=db();d.sessions={};var sid='UF-LOGIN-'+Date.now();
+   d.sessions[sid]={email:email,createdAt:Date.now(),expiresAt:Date.now()+43200000};
+   save(d);localStorage.setItem('uniflowLocalSessionV2',sid);localStorage.setItem('uniflowSession','active');localStorage.setItem('uniflowCurrentUser',JSON.stringify({email:email}));
+   document.getElementById('auth').style.display='none';document.getElementById('app').style.display='block';
+   if(typeof loadUserData==='function')loadUserData();if(typeof renderAll==='function')renderAll();
+ }
+ function signIn(){
+   clearError();var entered=(document.getElementById('freshLoginEmail').value||'').trim().toLowerCase(),pass=document.getElementById('freshLoginPassword').value||'';
+   if(!entered||!pass){error('Enter your university ID/email and password.');return}
+   var d=db(),u=d.users[entered];
+   if(!u){u=Object.values(d.users).find(function(x){var e=String(x.email||'').toLowerCase();var id=String(x.studentId||x.staffId||x.userId||x.id||'').toLowerCase();return e===entered||id===entered||e.split('@')[0]===entered})}
+   if(!u||String(u.email||'').toLowerCase()==='guest@uniflow.local'){error('Student account not found. Use Continue as guest for Guest mode.');return}
+   if(u.status!=='active'||u.passwordHash!==hash(pass)){error('Incorrect password.');return}
+   enter(String(u.email).toLowerCase());
+ }
+ function guest(){clearError();enter('guest@uniflow.local')}
+ function logout(){
+   var d=db();d.sessions={};save(d);localStorage.removeItem('uniflowLocalSessionV2');localStorage.removeItem('uniflowSession');localStorage.removeItem('uniflowCurrentUser');
+   document.getElementById('app').style.display='none';document.getElementById('auth').style.display='grid';
+ }
+ function boot(){
+   document.getElementById('freshSignIn').onclick=signIn;document.getElementById('freshGuest').onclick=guest;
+   document.querySelectorAll('button[onclick="signOut()"]').forEach(function(b){b.onclick=logout});
+   var d=db();d.sessions={};save(d);localStorage.removeItem('uniflowLocalSessionV2');localStorage.removeItem('uniflowSession');localStorage.removeItem('uniflowCurrentUser');
+   document.getElementById('auth').style.display='grid';document.getElementById('app').style.display='none';
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})();</script></body></html>

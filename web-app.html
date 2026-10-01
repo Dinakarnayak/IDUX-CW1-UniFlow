@@ -216,7 +216,7 @@ function registerNow(){
  const name=(prompt('Full name','New UniFlow Student')||'').trim();
  if(!name){setAuthError('Enter your name to create an account.');return}
  const email=(prompt('University email','newstudent@uniflow.local')||'').trim().toLowerCase();
- if(!/^\\S+@uniflow\\.local$/.test(email)){setAuthError('Use an email ending in @uniflow.local.');return}
+ if(!/^\S+@uniflow\.local$/.test(email)){setAuthError('Use an email ending in @uniflow.local.');return}
  const password=prompt('Create a password','student123');
  if(!password||password.length<4){setAuthError('Password must contain at least 4 characters.');return}
  seedAuthDB();const d=authDB();
@@ -340,7 +340,7 @@ const ROLE_PERMISSIONS={Student:['read','write'], 'Professor / Staff':['read','w
 function localHash(v){let h=2166136261;for(let i=0;i<String(v).length;i++){h^=String(v).charCodeAt(i);h=Math.imul(h,16777619)}return 'uf-'+(h>>>0).toString(16)}
 function authDB(){try{const d=JSON.parse(localStorage.getItem(AUTH_DB_KEY)||'null');return d&&d.users?d:{university:UNIVERSITY,users:{},sessions:{}}}catch(e){return {university:UNIVERSITY,users:{},sessions:{}}}}
 function saveAuthDB(d){localStorage.setItem(AUTH_DB_KEY,JSON.stringify(d))}
-function seedAuthDB(){const d=authDB();d.university=UNIVERSITY;d.users=d.users||{};[['dinakar@uniflow.local','Dinakar Nayak','Student','MSc Artificial Intelligence','demo1234'],['student@uniflow.local','Aisha Khan','Student','MSc Artificial Intelligence','demo1234'],['professor@uniflow.local','Alex Morgan','Professor / Staff','Teaching Workspace','professor123'],['admin@uniflow.local','UniFlow Administrator','Administrator','University Administration','admin123'],['guest@uniflow.local','Guest User','Guest','Demo Access','']].forEach((u,i)=>{if(!d.users[u[0]])d.users[u[0]]={id:'UF-'+String(i+1).padStart(3,'0'),email:u[0],name:u[1],role:u[2],course:u[3],passwordHash:localHash(u[4]),status:'active'}});d.sessions=d.sessions||{};saveAuthDB(d);return d}
+function seedAuthDB(){const d=authDB();d.university=UNIVERSITY;d.users=d.users||{};[['dinakar@uniflow.local','Dinakar Nayak','Student','MSc Artificial Intelligence','demo1234'],['student@uniflow.local','Aisha Khan','Student','MSc Artificial Intelligence','demo1234'],['professor@uniflow.local','Alex Morgan','Professor / Staff','Teaching Workspace','professor123'],['admin@uniflow.local','UniFlow Administrator','Administrator','University Administration','admin123'],['guest@uniflow.local','Guest User','Guest','Demo Access','']].forEach((u,i)=>{const existing=d.users[u[0]]||{};d.users[u[0]]={id:existing.id||'UF-'+String(i+1).padStart(3,'0'),email:u[0],name:existing.name||u[1],role:existing.role||u[2],course:existing.course||u[3],passwordHash:localHash(u[4]),status:'active'}});d.sessions=d.sessions||{};saveAuthDB(d);return d}
 function currentProfile(){const d=authDB(),sid=localStorage.getItem(SESSION_KEY),s=d.sessions?.[sid];if(!s||Date.now()>s.expiresAt)return null;const u=d.users?.[s.email];return u?{...u,key:u.email}:null}
 function profileKey(){const p=currentProfile();return p&&p.key?p.key:'guest'}
 function userDataKey(){return KEY+'_'+profileKey()}

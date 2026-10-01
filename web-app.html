@@ -107,21 +107,31 @@ body.dark .uf-ai-suggestion,body.dark .uf-ai-mode{background:var(--panel);color:
 window.uniflowShowError=function(message){var e=document.getElementById('authError');if(e){e.textContent='ERROR: '+message;e.style.display='block';e.scrollIntoView({block:'nearest'});}else{alert('ERROR: '+message);}};
 window.uniflowSignIn=function(){
   try{
-    var email=(document.getElementById('email')?.value||'').trim().toLowerCase();
+    var entered=(document.getElementById('email')?.value||'').trim().toLowerCase();
     var password=document.getElementById('password')?.value||'';
-    if(!email){window.uniflowShowError('Please enter your university email.');return false;}
-    if(!password){window.uniflowShowError('Please enter your password.');return false;}
+    if(!entered){window.uniflowShowError('Enter your university email or student/staff ID.');return false;}
+    if(!password){window.uniflowShowError('Enter your password.');return false;}
     var DB='uniflowUniversityDBV1', SESSION='uniflowLocalSessionV2';
     var d;
     try{d=JSON.parse(localStorage.getItem(DB)||'null')}catch(e){d=null}
-    if(!d||!d.users){window.uniflowShowError('UniFlow account database is not available. Please refresh the page.');return false;}
-    var u=d.users[email];
-    if(!u){window.uniflowShowError('Account not found in the UniFlow University directory.');return false;}
-    var h=2166136261, s=String(password);
+    if(!d||!d.users){window.uniflowShowError('UniFlow account database is unavailable. Please refresh the page.');return false;}
+    var email=entered, u=d.users[email];
+    if(!u){
+      var users=Object.values(d.users);
+      u=users.find(function(x){
+        var e=String(x.email||'').toLowerCase();
+        var id=String(x.studentId||x.staffId||x.userId||x.id||'').toLowerCase();
+        return e===entered || id===entered || e.split('@')[0]===entered;
+      });
+      if(u)email=String(u.email||'').toLowerCase();
+    }
+    if(!u||!email){window.uniflowShowError('Student/staff account not found. Guest access is separate — use Continue as guest only when you want Guest mode.');return false;}
+    var h=2166136261,s=String(password);
     for(var i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}
     var hash='uf-'+(h>>>0).toString(16);
-    if(u.status!=='active'||u.passwordHash!==hash){window.uniflowShowError('Incorrect university email or password.');return false;}
+    if(u.status!=='active'||u.passwordHash!==hash){window.uniflowShowError('Incorrect password for '+email+'.');return false;}
     d.sessions=d.sessions||{};
+    Object.keys(d.sessions).forEach(function(k){if(d.sessions[k]?.email==='guest@uniflow.local')delete d.sessions[k];});
     var sid='UFSESSION-'+Date.now();
     d.sessions[sid]={email:email,createdAt:Date.now(),expiresAt:Date.now()+43200000};
     localStorage.setItem(DB,JSON.stringify(d));
@@ -133,7 +143,6 @@ window.uniflowSignIn=function(){
     if(app)app.style.display='block';
     if(typeof window.loadUserData==='function')window.loadUserData();
     if(typeof window.renderAll==='function')window.renderAll();
-    else window.uniflowShowError('Sign-in succeeded, but the workspace did not load. Please refresh the page.');
     return false;
   }catch(err){
     console.error('UniFlow sign-in error',err);

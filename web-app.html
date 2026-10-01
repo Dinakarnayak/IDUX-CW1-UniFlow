@@ -702,6 +702,38 @@ function renderSupport(){
  const all=[...rs,...seeded];document.getElementById('supportRequests').innerHTML=all.slice(0,20).map(x=>'<div class="item"><span class="dot orange"></span><span class="item-main"><b>'+esc(x.subject)+'</b><small class="sub">'+esc(x.team)+' · '+esc(x.date)+'</small></span><span class="tag">'+esc(x.status)+'</span></div>').join('');
 }
 
+function renderMail(){
+ const list=document.getElementById('mailList'),unreadEl=document.getElementById('mailUnread'),contacts=document.getElementById('contactList');
+ if(!list&&!contacts)return;
+ const rows=typeof mailData==='function'?mailData():[];
+ const unread=rows.filter(x=>x[3]).length;
+ if(unreadEl)unreadEl.textContent=unread+' unread';
+ if(list){
+  list.innerHTML=rows.map((x,i)=>'<div class="item" style="cursor:pointer" onclick="openLocalMail('+i+')"><span class="dot '+(x[3]?'red':'green')+'"></span><span class="item-main"><b>'+esc(x[0])+'</b><small class="sub">'+esc(x[1])+' · '+esc(x[4])+'</small><small class="sub">'+esc(x[2])+'</small></span><button class="btn alt" onclick="event.stopPropagation();openLocalMail('+i+')">Open</button></div>').join('');
+ }
+ if(contacts){
+  const people=[['Dr. Alex Morgan','CO7091 / CO7113 Teaching Team','alex.morgan@uniflow.local'],['Student Services','General student support','services@uniflow.local'],['IT Service Desk','Account and technical support','it@uniflow.local'],['Academic Registry','Records and registration','registry@uniflow.local'],['Library Team','Library and research resources','library@uniflow.local'],['Finance Office','Fees and payments','finance@uniflow.local']];
+  contacts.innerHTML=people.map(x=>'<div class="item"><span class="dot green"></span><span class="item-main"><b>'+esc(x[0])+'</b><small class="sub">'+esc(x[1])+' · '+esc(x[2])+'</small></span><button class="btn alt" onclick="composeLocalMessage(\''+x[2]+'\')">Message</button></div>').join('');
+ }
+}
+function openLocalMail(i){
+ const rows=typeof mailData==='function'?mailData():[],x=rows[i];if(!x)return;
+ document.getElementById('modalTitle').textContent=x[1];
+ document.getElementById('modalBody').innerHTML='<div class="eyebrow">'+esc(x[0])+'</div><p class="sub" style="margin-top:8px">'+esc(x[4])+'</p><div class="card" style="margin-top:14px"><p style="line-height:1.7">'+esc(x[2])+'</p></div><button class="btn" style="width:100%;margin-top:14px" onclick="closeModal()">Close message</button>';
+ document.getElementById('modal').classList.remove('hidden');
+}
+function composeLocalMessage(to){
+ if(typeof requireWrite==='function'&&!requireWrite())return;
+ const recipient=to||'Student Services';
+ document.getElementById('modalTitle').textContent='Compose local message';
+ document.getElementById('modalBody').innerHTML='<div class="label">To</div><input id="msgTo" value="'+esc(recipient)+'"><div class="label">Subject</div><input id="msgSubject" placeholder="Subject"><div class="label">Message</div><textarea id="msgBody" rows="7" style="width:100%;padding:10px;border:1px solid var(--line);border-radius:9px;resize:vertical" placeholder="Write your message"></textarea><button class="btn" style="width:100%;margin-top:14px" onclick="sendLocalMessage()">Send message</button>';
+ document.getElementById('modal').classList.remove('hidden');
+}
+function sendLocalMessage(){
+ const to=f('msgTo'),subject=f('msgSubject'),body=f('msgBody');if(!subject||!body){toast('Enter a subject and message');return}
+ const key=userDataKey()+'_sentMessages',sent=JSON.parse(localStorage.getItem(key)||'[]');sent.unshift({to,subject,body,date:dateLabel(now())});localStorage.setItem(key,JSON.stringify(sent));closeModal();toast('Message saved locally');renderMail();
+}
+
 function renderUniversityLayer(){renderDirectory();renderFinance();renderLibrary();renderAttendance();renderSupport();renderMail();renderUniversityServices()}
 
 let inclusiveAIMode='general';

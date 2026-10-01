@@ -208,27 +208,6 @@ function enterApp(){
   toast('UniFlow could not open the workspace. Please try again.');
  }
 }
-document.getElementById('signInBtn')?.addEventListener('click',login);
-document.getElementById('guestBtn')?.addEventListener('click',guestLogin);
-document.getElementById('email')?.addEventListener('keydown',e=>{if(e.key==='Enter')login()});
-document.getElementById('password')?.addEventListener('keydown',e=>{if(e.key==='Enter')login()});
-function login(){
- const email=f('email').toLowerCase();
- const role=document.getElementById('loginRole')?.value||'Student';
- if(!email){toast('Enter your email');document.getElementById('email')?.focus();return}
- let p=null;
- try{p=JSON.parse(localStorage.getItem('uniflowUser_'+email)||'null')}catch(e){}
- if(!p||typeof p!=='object')p={key:email,email,name:email.split('@')[0].replace(/[._-]+/g,' '),university:'University of Leicester',course:'MSc Artificial Intelligence',role};
- p.key=email;p.email=email;p.role=role;
- saveProfile(p);enterApp();
-}
-function guestLogin(){
- let p=null;
- try{p=JSON.parse(localStorage.getItem('uniflowUser_guest')||'null')}catch(e){}
- if(!p||typeof p!=='object')p={key:'guest',email:'',name:'Guest User',university:'Guest workspace',course:'Demo planner',role:'Guest'};
- p.key='guest';p.role='Guest';saveProfile(p);enterApp();
-}
-function signOut(){clearLocalSession();document.getElementById('app').style.display='none';document.getElementById('auth').style.display='grid';setAuthError('');toast('Signed out securely')}
 function openProfile(){const p=currentProfile()||{key:'guest',name:'Guest User',university:'Guest workspace',course:'Demo planner',role:'Guest',email:''};const guest=p.role==='Guest';const perms=(ROLE_PERMISSIONS[p.role]||ROLE_PERMISSIONS.Guest).join(' · ');document.getElementById('modalTitle').textContent=guest?'Guest account':'Account details';document.getElementById('modalBody').innerHTML='<div class="card" style="margin-bottom:14px;padding:16px"><div style="display:flex;align-items:center;gap:12px"><span class="avatar">'+(guest?'GU':esc((p.name||'U').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()))+'</span><div><b>'+esc(p.name)+'</b><small class="sub" style="display:block">'+esc(p.role)+(guest?' · Read only':' · University account')+'</small></div></div></div><div class="label">Name</div><input id="pName" value="'+esc(p.name)+'" '+(guest?'disabled':'')+'><div class="label">University</div><input id="pUni" value="'+esc(p.university||'UniFlow University')+'" '+(guest?'disabled':'')+'><div class="label">Course / workspace</div><input id="pCourse" value="'+esc(p.course||'')+'" '+(guest?'disabled':'')+'><div class="label">Role</div><input value="'+esc(p.role)+'" disabled><div class="label">Email</div><input value="'+esc(p.email||'Guest account')+'" disabled><div class="label">Access</div><input value="'+esc(guest?'Read only · '+perms:'Authorised · '+perms)+'" disabled>'+(guest?'<p class="sub" style="margin-top:12px">You are signed in as Guest User. Changes to university data are disabled in guest mode.</p>':'<button class="btn" style="width:100%;margin-top:15px" onclick="saveProfileForm()">Save profile</button>');document.getElementById('modal').classList.remove('hidden')}
 function saveProfileForm(){if(!requireWrite())return;const p=currentProfile()||{key:'guest'};p.name=f('pName')||'User';p.university=f('pUni')||'University';p.course=f('pCourse')||'Course';p.role=f('pRole')||'Student';saveProfile(p);closeModal();renderAll();toast('Profile saved')}
 function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));const el=document.getElementById(id);if(el)el.classList.add('active');document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.go===id));location.hash=id;renderAll()}

@@ -1070,13 +1070,10 @@ function mailData(){
     if(guest)guest.onclick=window.uniflowFreshGuest;
     document.querySelectorAll('button[onclick="signOut()"]').forEach(b=>b.onclick=window.uniflowFreshSignOut);
     // Remove any previous Guest/student session before a fresh browser visit.
-    const remembered=sessionStorage.getItem(AUTH_V3);
-    const sid=localStorage.getItem(SESSION);
-    const d=db(),s=d.sessions&&sid?d.sessions[sid]:null;
-    const valid=s&&s.email&&Date.now()<Number(s.expiresAt||0)&&remembered===String(s.email).toLowerCase();
-    if(valid && String(s.email).toLowerCase()!=='guest@uniflow.local') showApp();
-    else if(valid && String(s.email).toLowerCase()==='guest@uniflow.local') showApp();
-    else {clearAll();showAuth('');}
+    // Fresh page load: never inherit an old Guest/student session.
+    // This prevents the legacy startup controller from sending the user into Guest mode.
+    clearAll();
+    showAuth('');
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
 })();

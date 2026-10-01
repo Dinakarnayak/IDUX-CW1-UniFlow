@@ -58,9 +58,10 @@ body.dark .uf-ai-suggestion,body.dark .uf-ai-mode{background:var(--panel);color:
   <input id="email" type="email" autocomplete="username" value="dinakar@uniflow.local" placeholder="name@uniflow.local">
   <div class="label" style="margin-top:12px">Password</div>
   <input id="password" type="password" autocomplete="current-password" value="demo1234" placeholder="Password">
-  <div id="authError" class="sub" style="display:none;color:var(--red);margin-top:10px"></div>
+  <div id="authError" class="sub" role="alert" aria-live="assertive" style="display:none;color:var(--red);margin-top:10px;padding:10px 12px;border:1px solid var(--red);border-radius:10px;background:rgba(255,80,80,.08)"></div>
+  <button type="button" class="btn alt" onclick="window.uniflowDiagnostics()" style="width:100%;margin-top:10px">Run login diagnostics</button>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px">
-    <button type="button" class="btn" id="signInBtn">Sign in</button>
+    <button type="button" class="btn" id="signInBtn" onclick="window.uniflowSignIn()">Sign in</button>
     <button type="button" class="btn alt" id="guestBtn" onclick="window.openGuestPortal()">Continue as guest</button>
   </div>
   <button type="button" class="btn alt" id="newUserBtn" style="width:100%;margin-top:10px">Create a new local user</button>
@@ -72,6 +73,30 @@ body.dark .uf-ai-suggestion,body.dark .uf-ai-mode{background:var(--panel);color:
 <p class="sub" style="font-size:11px;margin-top:14px">Coursework prototype · local browser authentication · not connected to University of Leicester SSO.</p>
 </div></div>
 <script>
+window.uniflowShowError=function(message){var e=document.getElementById('authError');if(e){e.textContent='ERROR: '+message;e.style.display='block';e.scrollIntoView({block:'nearest'});}else{alert('ERROR: '+message);}};
+window.uniflowSignIn=function(){
+ try{
+  var email=(document.getElementById('email')?.value||'').trim().toLowerCase();
+  var password=document.getElementById('password')?.value||'';
+  if(!email||!password){window.uniflowShowError('Enter your university email and password.');return;}
+  if(typeof window.login==='function'){window.login();return;}
+  var DB='uniflowUniversityDBV1',d;
+  try{d=JSON.parse(localStorage.getItem(DB)||'null')||{users:{},sessions:{}};}catch(e){window.uniflowShowError('Browser storage could not be read. '+e.message);return;}
+  var u=d.users&&d.users[email];
+  if(!u){window.uniflowShowError('Account not found: '+email);return;}
+  window.uniflowShowError('The UniFlow application script did not finish loading. Please use the error message above to report this problem.');
+ }catch(err){window.uniflowShowError(err&&err.message?err.message:String(err));}
+};
+window.uniflowDiagnostics=function(){
+ try{
+  var checks=[];
+  checks.push('Browser JavaScript: OK');
+  checks.push('Local storage: '+(typeof localStorage==='undefined'?'FAILED':'OK'));
+  checks.push('Sign-in function: '+(typeof window.login==='function'?'OK':'NOT LOADED'));
+  checks.push('Workspace function: '+(typeof window.enterApp==='function'?'OK':'NOT LOADED'));
+  window.uniflowShowError('Diagnostics — '+checks.join(' | '));
+ }catch(err){window.uniflowShowError(err.message);}
+};
 window.openGuestPortal=function(){
   try{
     const DB='uniflowUniversityDBV1',SESSION='uniflowLocalSessionV2';

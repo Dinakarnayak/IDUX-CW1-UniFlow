@@ -19,7 +19,7 @@
 </style>
 </head>
 <body>
-<div id="auth" class="auth"><div class="authbox"><div class="brand"><span class="mark">U</span>UniFlow</div><div class="eyebrow">Student planner</div><h1>Your whole university life, organised.</h1><p class="sub">Classes, tasks, exams, revision and focus — together in one calm planner.</p><div class="label">University email</div><input id="email" value="aisha@leicester.ac.uk"><div class="label">Password</div><input id="password" type="password" value="demo1234"><div style="display:flex;gap:8px;margin-top:16px"><button class="btn" style="flex:1" onclick="login()">Sign in</button><button class="btn alt" style="flex:1" onclick="guestLogin()">Continue as guest</button></div><div class="label">Role</div><select id="loginRole"><option>Student</option><option>Professor / Staff</option><option>Guest</option></select><p class="sub" style="font-size:11px;margin-top:14px">Demo/local authentication only. No university credentials are transmitted.</p></div></div>
+<div id="auth" class="auth"><div class="authbox"><div class="brand"><span class="mark">U</span>UniFlow</div><div class="eyebrow">Student planner</div><h1>Your whole university life, organised.</h1><p class="sub">Classes, tasks, exams, revision and focus — together in one calm planner.</p><div class="label">University email</div><input id="email" value="aisha@leicester.ac.uk"><div class="label">Password</div><input id="password" type="password" value="demo1234"><div style="display:flex;gap:8px;margin-top:16px"><button type="button" class="btn" style="flex:1" id="signInBtn">Sign in</button><button type="button" class="btn alt" style="flex:1" id="guestBtn">Continue as guest</button></div><div class="label">Role</div><select id="loginRole"><option>Student</option><option>Professor / Staff</option><option>Guest</option></select><p class="sub" style="font-size:11px;margin-top:14px">Demo/local authentication only. No university credentials are transmitted.</p></div></div>
 <div id="app" class="app">
 <aside class="sidebar"><div class="brand"><span class="mark">U</span>UniFlow</div><div class="nav">
 <small>My UniFlow</small><button data-go="today" class="active">⌂ Home</button><button data-go="activity">◉ Activity</button><button data-go="courses">▣ Courses</button>
@@ -103,12 +103,58 @@ function toast(t){const e=document.getElementById('toast');if(!e)return;e.textCo
 function currentProfile(){try{return JSON.parse(localStorage.getItem('uniflowCurrentUser')||'null')}catch(e){return null}}
 function profileKey(){const p=currentProfile();return p&&p.key?p.key:'guest'}
 function userDataKey(){return KEY+'_'+profileKey()}
-function loadUserData(){try{data=JSON.parse(localStorage.getItem(userDataKey())||'null')||JSON.parse(JSON.stringify(DEFAULT_DATA));save()}catch(e){data=JSON.parse(JSON.stringify(DEFAULT_DATA));save()}}
+function freshData(){return JSON.parse(JSON.stringify(DEFAULT_DATA))}
+function normaliseData(raw){
+ const d=raw&&typeof raw==='object'?raw:{};
+ const base=freshData();
+ ['tasks','classes','exams','grades','reminders','events','courses','announcements','discussions','board'].forEach(k=>{if(!Array.isArray(d[k]))d[k]=base[k]});
+ d.focus=Number.isFinite(Number(d.focus))?Number(d.focus):0;
+ d.focusSessions=Number.isFinite(Number(d.focusSessions))?Number(d.focusSessions):0;
+ d.settings=Object.assign({},base.settings,d.settings&&typeof d.settings==='object'?d.settings:{});
+ d.a11y=Object.assign({},base.a11y,d.a11y&&typeof d.a11y==='object'?d.a11y:{});
+ return d;
+}
+function loadUserData(){try{data=normaliseData(JSON.parse(localStorage.getItem(userDataKey())||'null'));save()}catch(e){data=freshData();save()}}
 function save(){localStorage.setItem(userDataKey(),JSON.stringify(data))}
 function saveProfile(p){localStorage.setItem('uniflowUser_'+p.key,JSON.stringify(p));localStorage.setItem('uniflowCurrentUser',JSON.stringify(p))}
-function enterApp(){localStorage.setItem('uniflowSession','active');loadUserData();document.getElementById('auth').style.display='none';document.getElementById('app').style.display='block';renderAll()}
-function login(){const email=f('email').toLowerCase();const role=document.getElementById('loginRole')?.value||'Student';if(!email){toast('Enter your email');return}let p;try{p=JSON.parse(localStorage.getItem('uniflowUser_'+email)||'null')}catch(e){p=null}if(!p)p={key:email,email:email,name:email.split('@')[0].replace(/[._-]+/g,' '),university:'University of Leicester',course:'MSc Artificial Intelligence',role:role};p.role=role;saveProfile(p);enterApp()}
-function guestLogin(){let p;try{p=JSON.parse(localStorage.getItem('uniflowUser_guest')||'null')}catch(e){p=null}if(!p)p={key:'guest',email:'',name:'Guest User',university:'Guest workspace',course:'Demo planner',role:'Guest'};saveProfile(p);enterApp()}
+function enterApp(){
+ try{
+  localStorage.setItem('uniflowSession','active');
+  loadUserData();
+  const auth=document.getElementById('auth'),app=document.getElementById('app');
+  if(auth)auth.style.display='none';
+  if(app)app.style.display='block';
+  renderAll();
+ }catch(e){
+  console.error('UniFlow startup error',e);
+  const auth=document.getElementById('auth'),app=document.getElementById('app');
+  if(auth)auth.style.display='grid';
+  if(app)app.style.display='none';
+  const emailEl=document.getElementById('email');
+  if(emailEl)emailEl.focus();
+  toast('UniFlow could not open the workspace. Please try again.');
+ }
+}
+document.getElementById('signInBtn')?.addEventListener('click',login);
+document.getElementById('guestBtn')?.addEventListener('click',guestLogin);
+document.getElementById('email')?.addEventListener('keydown',e=>{if(e.key==='Enter')login()});
+document.getElementById('password')?.addEventListener('keydown',e=>{if(e.key==='Enter')login()});
+function login(){
+ const email=f('email').toLowerCase();
+ const role=document.getElementById('loginRole')?.value||'Student';
+ if(!email){toast('Enter your email');document.getElementById('email')?.focus();return}
+ let p=null;
+ try{p=JSON.parse(localStorage.getItem('uniflowUser_'+email)||'null')}catch(e){}
+ if(!p||typeof p!=='object')p={key:email,email,name:email.split('@')[0].replace(/[._-]+/g,' '),university:'University of Leicester',course:'MSc Artificial Intelligence',role};
+ p.key=email;p.email=email;p.role=role;
+ saveProfile(p);enterApp();
+}
+function guestLogin(){
+ let p=null;
+ try{p=JSON.parse(localStorage.getItem('uniflowUser_guest')||'null')}catch(e){}
+ if(!p||typeof p!=='object')p={key:'guest',email:'',name:'Guest User',university:'Guest workspace',course:'Demo planner',role:'Guest'};
+ p.key='guest';p.role='Guest';saveProfile(p);enterApp();
+}
 function signOut(){localStorage.removeItem('uniflowSession');localStorage.removeItem('uniflowCurrentUser');document.getElementById('app').style.display='none';document.getElementById('auth').style.display='grid';toast('Signed out')}
 function openProfile(){const p=currentProfile()||{key:'guest',name:'Guest User',university:'Guest workspace',course:'Demo planner',role:'Guest',email:''};document.getElementById('modalTitle').textContent='Profile';document.getElementById('modalBody').innerHTML='<div class="label">Name</div><input id="pName" value="'+esc(p.name)+'"><div class="label">University</div><input id="pUni" value="'+esc(p.university)+'"><div class="label">Course</div><input id="pCourse" value="'+esc(p.course)+'"><div class="label">Role</div><select id="pRole"><option '+(p.role==='Student'?'selected':'')+'>Student</option><option '+(p.role==='Professor / Staff'?'selected':'')+'>Professor / Staff</option><option '+(p.role==='Guest'?'selected':'')+'>Guest</option></select><div class="label">Email</div><input value="'+esc(p.email||'Guest account')+'" disabled><button class="btn" style="width:100%;margin-top:15px" onclick="saveProfileForm()">Save profile</button>';document.getElementById('modal').classList.remove('hidden')}
 function saveProfileForm(){const p=currentProfile()||{key:'guest'};p.name=f('pName')||'User';p.university=f('pUni')||'University';p.course=f('pCourse')||'Course';p.role=f('pRole')||'Student';saveProfile(p);closeModal();renderAll();toast('Profile saved')}

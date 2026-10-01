@@ -107,7 +107,7 @@ let cal='week',filter='all',timer=1500,running=false,intv=null;
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function f(id){const e=document.getElementById(id);return e?e.value.trim():''}
 function toast(t){const e=document.getElementById('toast');if(!e)return;e.textContent=t;e.classList.add('show');setTimeout(()=>e.classList.remove('show'),1800)}
-function currentProfile(){try{return JSON.parse(localStorage.getItem('uniflowCurrentUser')||'null')}catch(e){return null}}
+// Legacy profile reader removed: authentication now uses the local university session.
 function profileKey(){const p=currentProfile();return p&&p.key?p.key:'guest'}
 function userDataKey(){return KEY+'_'+profileKey()}
 function freshData(){return JSON.parse(JSON.stringify(DEFAULT_DATA))}

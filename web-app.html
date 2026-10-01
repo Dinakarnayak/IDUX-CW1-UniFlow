@@ -645,7 +645,7 @@ function askAgent(){
 function renderAll(){seedAuthDB();const p=currentProfile();if(!p){signOut();return}const topName=document.getElementById('topProfileName'),topRole=document.getElementById('topProfileRole'),topAvatar=document.getElementById('avatarBtn');if(topName)topName.textContent=p.name||'User';if(topRole)topRole.textContent=p.role==='Guest'?'Guest · Read only':(p.role||'Student')+' · University account';if(topAvatar)topAvatar.textContent=p.role==='Guest'?'GU':(p.name||'U').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase();renderUniversityServices();renderAccount();renderMail();renderUniversityLayer();const current=now(),h=document.querySelector('#today .title');if(h)h.textContent=(current.getHours()<12?'Good morning, ':current.getHours()<18?'Good afternoon, ':'Good evening, ')+(p.name||'User').split(' ')[0];const clock=document.getElementById('liveDateTime');if(clock)clock.textContent=current.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+' · '+current.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});const initials=(p.role==='Guest'?'GU':(p.name||'U').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase());const av=document.getElementById('avatarBtn');if(av)av.textContent=initials;const tn=document.getElementById('topProfileName');if(tn)tn.textContent=p.name||'User';const tr=document.getElementById('topProfileRole');if(tr)tr.textContent=p.role==='Guest'?'Guest · Read only':(p.role||'Student')+' · University account';const sn=document.getElementById('settingsName');if(sn)sn.textContent=p.name||'Profile';const sa=document.getElementById('settingsAccount');if(sa)sa.textContent=p.email||'Guest account';const sr=document.getElementById('settingsRole');if(sr)sr.textContent=p.role||'Student';renderHome();renderCalendar();renderClasses();renderTasks();renderExams();renderGrades();renderReminders();renderFocusHistory();renderActivity();renderCourses();renderAIBoard();renderStudyCoach();renderAgentKnowledge();renderAnalytics();applyA11y();const upcoming=data.exams.map(e=>({...e,days:daysUntil(e.date)})).filter(e=>e.days>=0).sort((a,b)=>a.days-b.days);const ec=document.getElementById('examCountdown');if(ec)ec.textContent=upcoming.length?upcoming[0].days+' days':'No upcoming exam';const et=ec?.nextElementSibling;if(et)et.textContent=upcoming[0]?.class||'—';document.getElementById('focusTotal').textContent=(data.focus/60).toFixed(1)+'h';document.getElementById('sessionCount').textContent=data.focusSessions||0;document.getElementById('dark').checked=data.settings.dark;document.getElementById('defaultView').value=data.settings.view;document.getElementById('classReminders').checked=data.settings.classReminders;document.getElementById('deadlineReminders').checked=data.settings.deadlineReminders;document.body.classList.toggle('dark',data.settings.dark)}
 document.getElementById('directoryQuery')?.addEventListener('input',renderDirectory);document.getElementById('search').addEventListener('input',e=>{const q=e.target.value.toLowerCase();if(q&&data.tasks.some(t=>(t.title+' '+t.class).toLowerCase().includes(q))){go('tasks');filter='all';renderTasks()}});
 (function restoreExistingSession(){
- /* Always begin on authentication unless a valid non-guest account is already authenticated. */
+ /* Only restore a deliberately persisted non-guest session. */
  const sid=localStorage.getItem(SESSION_KEY);
  const p=currentProfile();
  /* A Guest session is never restored automatically. Guest mode must be explicitly selected. */
@@ -775,25 +775,27 @@ async function login(){const email=f('email').toLowerCase(),password=document.ge
 function guestLogin(){seedAuthDB();createLocalSession('guest@uniflow.local');enterApp();toast('Guest access enabled — read only')}
 function signOut(){
  try{
-  clearLocalSession();
+  /* Hard logout: invalidate every known UniFlow session and return to auth. */
+  var d=authDB();
+  if(d&&d.sessions){Object.keys(d.sessions).forEach(function(k){delete d.sessions[k];});saveAuthDB(d);}
   localStorage.removeItem(SESSION_KEY);
   localStorage.removeItem('uniflowSession');
   localStorage.removeItem('uniflowCurrentUser');
-  const app=document.getElementById('app'),auth=document.getElementById('auth');
+  localStorage.removeItem('uniflowGuestMode');
+  window.__UF_AUTHENTICATED__=false;
+  var app=document.getElementById('app'),auth=document.getElementById('auth');
   if(app)app.style.display='none';
   if(auth)auth.style.display='grid';
-  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active')});
-  const home=document.getElementById('today');if(home)home.classList.add('active');
-  const email=document.getElementById('email'),password=document.getElementById('password');
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  var email=document.getElementById('email'),password=document.getElementById('password');
   if(email)email.value='';
   if(password)password.value='';
   setAuthError('');
-  toast('Signed out successfully');
   return false;
  }catch(err){
   console.error('UniFlow sign-out error',err);
-  const e=document.getElementById('authError');
-  if(e){e.textContent='ERROR: Sign out failed: '+(err.message||err);e.style.display='block';}
+  var e=document.getElementById('authError');
+  if(e){e.textContent='ERROR: Sign out failed: '+(err&&err.message?err.message:String(err));e.style.display='block';}
   return false;
  }
 }

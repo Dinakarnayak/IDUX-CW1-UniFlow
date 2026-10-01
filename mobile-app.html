@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#19323f">
+<title>UniFlow — Functional Mobile Prototype</title>
+<style>
+:root{--bg:#f6f8fa;--card:#fff;--ink:#18202a;--muted:#697481;--line:#dfe4e8;--accent:#2c5b7d;--soft:#e5eff6;--navy:#19323f;--green:#26815e;--amber:#b2741c;--red:#b83e45}
+*{box-sizing:border-box}body{margin:0;background:#e9edf0;color:var(--ink);font:14px Inter,system-ui,sans-serif}.app{width:min(100%,430px);min-height:100vh;margin:auto;background:var(--bg)}.screen{display:none;min-height:100vh;padding:24px 22px 96px}.screen.active{display:block}.brand{font-size:12px;font-weight:800;color:var(--accent);letter-spacing:.06em}.h1{font-size:26px;line-height:1.12;margin:28px 0 8px;font-weight:750}.sub{color:var(--muted);font-size:12px;line-height:1.5}.label{margin-top:26px;font-size:10px;font-weight:800;letter-spacing:.08em;color:#89939d}.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:10px}.btn{width:100%;border:0;border-radius:8px;padding:14px 16px;margin-top:14px;font-weight:700;cursor:pointer;background:var(--accent);color:#fff}.btn.secondary{background:#fff;color:var(--ink);border:1px solid var(--line)}input,select,textarea{width:100%;border:1px solid var(--line);border-radius:8px;background:#fff;padding:12px;margin-top:6px;font:inherit;color:var(--ink)}textarea{min-height:90px}.row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid var(--line);font-size:11px}.row:last-child{border-bottom:0}.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.chip{border:1px solid var(--line);background:#fff;border-radius:18px;padding:7px 12px;font-size:10px;font-weight:700;cursor:pointer}.chip.on{background:var(--soft);border-color:transparent;color:var(--accent)}.event{padding:13px;border-left:3px solid var(--accent);background:var(--soft);border-radius:8px;margin-top:9px}.task{display:grid;grid-template-columns:20px 1fr auto;gap:10px;align-items:center}.task input{width:18px;margin:0;accent-color:var(--accent)}small{color:var(--muted)}.status{font-size:9px;font-weight:800}.danger{color:var(--red)}.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.metric{background:#fff;border:1px solid var(--line);border-radius:9px;padding:12px}.metric strong{font-size:18px}.bars{height:150px;display:flex;align-items:end;gap:10px;padding:18px 4px 5px}.bar{flex:1;background:var(--accent);border-radius:5px 5px 2px 2px}.timer{text-align:center;font-size:54px;font-weight:750;margin:60px 0 20px}.progress{height:5px;background:var(--line);border-radius:5px}.progress i{display:block;height:100%;background:var(--accent);border-radius:5px}.nav{position:fixed;bottom:0;width:min(100%,430px);height:70px;background:#fff;border-top:1px solid var(--line);display:grid;grid-template-columns:repeat(5,1fr);z-index:5}.nav button{border:0;background:#fff;color:#7a858f;font-size:9px}.nav button.active{color:var(--accent);font-weight:800}.nav b{display:block;font-size:16px;margin-bottom:4px}.toast{position:fixed;left:50%;bottom:84px;transform:translate(-50%,15px);background:#18202a;color:#fff;padding:11px 14px;border-radius:8px;font-size:11px;opacity:0;pointer-events:none;transition:.2s;z-index:10}.toast.show{opacity:1;transform:translate(-50%,0)}
+</style>
+</head>
+<body>
+<div class="app">
+
+<section id="onboarding" class="screen active">
+<div class="brand">UNIFLOW</div>
+<div class="h1">A clearer way to manage university study.</div>
+<p class="sub">Plan deadlines, protect focused time, and understand your workload in one place.</p>
+<div class="card" style="background:var(--navy);color:#fff;margin-top:44px"><small style="color:#b7c2ca">WEEK OVERVIEW</small><div class="bars" id="mini"></div><b style="font-size:11px">Designed around your workload.</b></div>
+<button class="btn" onclick="go('login')">Get started</button>
+<button class="btn secondary" onclick="go('login')">Existing account · Sign in</button>
+</section>
+
+<section id="login" class="screen">
+<div class="brand">UNIFLOW</div><div class="h1">University sign in</div><p class="sub">Use your institutional account to continue.</p>
+<div class="label">UNIVERSITY ACCOUNT</div><div class="card">
+<label>Email<input id="email" type="email" value="name@leicester.ac.uk"></label>
+<label style="display:block;margin-top:12px">Password<input id="password" type="password" value="demo-password"></label>
+<button class="btn" onclick="signIn()">Continue</button><button class="btn secondary" onclick="toast('Reset instructions would be sent here.')">Forgot password?</button>
+</div></section>
+
+<section id="personal" class="screen">
+<div class="brand">UNIFLOW</div><div class="h1">Set up your workspace</div><p class="sub">Choose how UniFlow should plan around your week.</p>
+<div class="label">COURSE LEVEL</div><div class="chips"><button class="chip on">Postgraduate</button><button class="chip">Undergraduate</button></div>
+<div class="label">WHAT MATTERS MOST</div><div class="card" id="goals"></div>
+<div class="label">PLANNING STYLE</div><div class="chips"><button class="chip">Flexible</button><button class="chip on">Structured</button><button class="chip">Mixed</button></div>
+<button class="btn" onclick="savePersonal()">Save preferences</button>
+</section>
+
+<section id="home" class="screen">
+<div class="brand">MON 12 OCT</div><div class="h1" style="margin-top:8px">Good morning, Aisha</div><p class="sub">Your week is currently manageable.</p>
+<div class="card"><div class="label" style="margin:0">NEXT ACTION</div><h3>Complete literature review</h3><p class="sub">CO4223 · 2 hours · Due today</p><button class="btn" onclick="go('focus')">Start focus</button></div>
+<div class="label">DEADLINES</div><div id="homeTasks"></div>
+<div class="label">SYSTEM RECOMMENDATION</div><div class="card"><b>Schedule adjustment</b><p class="sub">Move Tuesday study time to 17:00 because of a group meeting.</p><button class="btn secondary" onclick="go('calendar')">Review recommendation</button></div>
+</section>
+
+<section id="calendar" class="screen">
+<div class="brand">UNIFLOW</div><div class="h1">Calendar</div><p class="sub">12–18 October 2026</p>
+<div class="chips"><button class="chip">Day</button><button class="chip on">Week</button><button class="chip">Month</button></div>
+<div class="event"><b>HCI lecture</b><br><small>09:00–10:00</small></div><div class="event"><b>Library / independent study</b><br><small>10:00–12:00</small></div><div class="event" style="border-color:var(--amber);background:#f9efda"><b>Group meeting</b><br><small>13:00–14:00</small></div><div class="event" style="border-color:var(--green);background:#e4f4ed"><b>CO4223 focus block</b><br><small>14:00–16:00</small></div>
+<div class="label">CONFLICT DETECTED</div><div class="card"><b>Suggested alternative: 16:00–18:00</b><p class="sub">Fixed commitments remain unchanged.</p><button class="btn" onclick="applySchedule()">Apply change</button></div>
+</section>
+
+<section id="tasks" class="screen">
+<div class="brand">UNIFLOW</div><div class="h1">Tasks</div><p class="sub"><span id="taskCount">3</span> active tasks require attention.</p>
+<div class="chips"><button class="chip on">All</button><button class="chip">Today</button><button class="chip">Upcoming</button></div>
+<div class="label">ACTIVE</div><div id="taskList"></div><button class="btn" onclick="addTask()">Add task</button>
+</section>
+
+<section id="planner" class="screen">
+<div class="brand">UNIFLOW</div><div class="h1">Study planner</div><p class="sub">Generate a draft plan from deadlines, availability and constraints.</p>
+<div class="label">PLANNING INPUTS</div><div class="card">
+<div class="row"><span>Available study time</span><b>10 hrs / week</b></div><div class="row"><span>Active deadlines</span><b>3</b></div><div class="row"><span>Fixed commitments</span><b>4</b></div><div class="row"><span>Session length</span><b>60–120 min</b></div>
+</div><div class="label">RULES</div><div class="card" id="rules"></div><button class="btn" onclick="generatePlan()">Generate draft plan</button>
+</section>
+
+<section id="plan" class="screen">
+<div class="brand">UNIFLOW</div><div class="h1">Draft study plan</div><p class="sub">12–18 October 2026 · editable before applying</p><div id="planList"></div>
+<div class="card"><b>Why this plan?</b><p class="sub">It protects fixed commitments, prioritises nearer deadlines and leaves a buffer.</p></div>
+<button class="btn" onclick="acceptPlan()">Accept draft</button><button class="btn secondary" onclick="go('planner')">Edit plan</button>
+</section>
+
+<section id="focus" class="screen">
+<div class="brand">FOCUS SESSION</div><div class="h1">CO4223 · Literature review</div><div class="timer" id="timer">25:00</div><div class="progress"><i id="timerBar" style="width:100%"></i></div>
+<button class="btn" id="timerBtn" onclick="toggleTimer()">Start</button><button class="btn secondary" onclick="endFocus()">End session</button>
+<div class="label">SESSION CONTROLS</div><div class="card"><div class="row"><span>Notifications</span><b>Blocked</b></div><div class="row"><span>Break reminder</span><b>25 min</b></div></div>
+</section>
+
+<section id="wellbeing" class="screen">
+<div class="brand">UNIFLOW</div><div class="h1">Wellbeing</div><p class="sub">Optional check-in. You control how it is used.</p>
+<div class="label">HOW ARE YOU FEELING?</div><div class="chips" id="moods"></div><div class="label">FACTORS</div><div class="chips" id="factors"></div><div class="label">OPTIONAL NOTE</div><textarea id="note" placeholder="Anything affecting your study today?"></textarea><button class="btn" onclick="saveWellbeing()">Save check-in</button>
+</section>
+
+<section id="groups" class="screen">
+<div class="brand">UNIFLOW</div><div class="h1">Group project</div><p class="sub">4 members · shared workspace</p><div class="chips"><button class="chip on">Chat</button><button class="chip" onclick="go('tasks')">Tasks</button><button class="chip">Files</button><button class="chip">Notes</button></div>
+<div class="label">RECENT ACTIVITY</div><div class="card"><b>Aisha · 10:24</b><p class="sub">Uploaded prototype_v2.pdf</p></div><div class="card"><b>Tom · 10:28</b><p class="sub">Commented on screen 4</p></div>
+<input id="message" placeholder="Write a message…"><button class="btn" onclick="sendMessage()">Send</button>
+</section>
+
+<section id="analytics" class="screen">
+<div class="brand">UNIFLOW</div><div class="h1">Progress</div><p class="sub">Last 7 days</p><div class="metrics"><div class="metric"><strong>18.5h</strong><br><small>Study time</small></div><div class="metric"><strong>78%</strong><br><small>Complete</small></div><div class="metric"><strong id="focusMetric">6.2h</strong><br><small>Focus</small></div></div>
+<div class="label">STUDY TIME</div><div class="card"><div class="bars" id="bars"></div></div><div class="label">REFLECTION</div><div class="card"><b>Afternoon is your strongest study period.</b><p class="sub">Use this pattern when reviewing future plans.</p></div>
+</section>
+
+<section id="whatif" class="screen">
+<div class="brand">UNIFLOW</div><div class="h1">What-if analysis</div><p class="sub">Explore workload trade-offs before changing your plan.</p>
+<div class="label">SCENARIO</div><select id="scenario" onchange="simulate()"><option value="work">Add 5 hours of part-time work</option><option value="travel">Add 4 hours of travel</option><option value="deadline">Move a deadline forward 2 days</option></select>
+<div class="label">PROJECTED IMPACT</div><div class="card" id="impact"></div><button class="btn" onclick="applyScenario()">Apply scenario</button><button class="btn secondary" onclick="go('analytics')">Discard</button>
+</section>
+
+<section id="settings" class="screen">
+<div class="brand">UNIFLOW</div><div class="h1">Settings</div><p class="sub">Accessibility, notifications and account controls.</p>
+<div class="label">ACCESSIBILITY</div><div class="card"><label class="row"><span>Reduce motion</span><input type="checkbox" onchange="document.body.classList.toggle('reduce',this.checked)"></label><div class="row"><span>Screen reader labels</span><b>On</b></div><div class="row"><span>Text size</span><b>Default</b></div></div>
+<div class="label">NOTIFICATIONS</div><div class="card"><label class="row"><span>Task reminders</span><input type="checkbox" checked onchange="toast(this.checked?'Task reminders on':'Task reminders off')"></label><div class="row"><span>Deadline alerts</span><b>On</b></div></div>
+<button class="btn secondary" onclick="go('privacy')">Privacy & data</button>
+</section>
+
+<section id="privacy" class="screen">
+<div class="brand">UNIFLOW</div><div class="h1">Privacy & data</div><p class="sub">Choose what UniFlow can use for personalisation.</p>
+<div class="card"><label class="row"><span>AI recommendations</span><input type="checkbox" checked onchange="toast('Preference saved')"></label><div class="row"><span>Calendar data</span><b>On</b></div><label class="row"><span>Wellbeing data</span><input type="checkbox" onchange="toast('Preference saved')"></label></div>
+<button class="btn secondary" onclick="downloadData()">Download my data</button><button class="btn secondary" onclick="toast('Deletion requires confirmation in a production account flow.')">Delete my data</button>
+</section>
+
+<nav class="nav"><button data-nav="home"><b>⌂</b>Home</button><button data-nav="calendar"><b>□</b>Calendar</button><button data-nav="focus"><b>◷</b>Focus</button><button data-nav="groups"><b>◌</b>Groups</button><button data-nav="settings"><b>⋯</b>More</button></nav>
+</div>
+<div id="toast" class="toast"></div>
+<script>
+const state=JSON.parse(localStorage.getItem('uniflowState')||'{"tasks":[{"t":"Complete literature review","m":"CO4223 · Due today","done":false},{"t":"Prepare experiment setup","m":"CO7091 · Due tomorrow","done":false},{"t":"Refine prototype screens","m":"CO4223 · 3 days","done":false}]}');
+const save=()=>localStorage.setItem('uniflowState',JSON.stringify(state));
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(window.tt);window.tt=setTimeout(()=>t.classList.remove('show'),2200)}
+function go(id){document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.nav===id));history.replaceState(null,'','#'+id);window.scrollTo(0,0);render()}
+document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>go(b.dataset.nav));
+function signIn(){if(!email.value||!password.value)return toast('Enter your university email and password.');go('personal')}
+function savePersonal(){toast('Preferences saved');go('home')}
+function renderTasks(){taskList.innerHTML=state.tasks.map((x,i)=>'<div class="card task"><input type="checkbox" '+(x.done?'checked':'')+' onchange="toggleTask('+i+',this.checked)"><div><b style="'+(x.done?'text-decoration:line-through;opacity:.5':'')+'">'+x.t+'</b><small>'+x.m+'</small></div><span class="status '+(i===0?'danger':'')+'">'+(i===0?'Due today':'Upcoming')+'</span></div>').join('');taskCount.textContent=state.tasks.filter(x=>!x.done).length}
+function toggleTask(i,v){state.tasks[i].done=v;save();renderTasks();toast(v?'Task completed':'Task reopened')}
+function addTask(){const t=prompt('Task name');if(!t)return;state.tasks.push({t,m:'Added just now',done:false});save();renderTasks();toast('Task added')}
+function renderHome(){homeTasks.innerHTML=state.tasks.slice(0,3).map(x=>'<div class="card"><b>'+x.t+'</b><p class="sub">'+x.m+'</p></div>').join('')}
+function renderGoals(){goals.innerHTML=['Manage deadlines','Improve focus','Balance work and study','Collaborate effectively'].map((x,i)=>'<label class="row"><span>'+x+'</span><input type="checkbox" '+(i<3?'checked':'')+'></label>').join('')}
+function renderRules(){rules.innerHTML=['Protect fixed commitments','Include breaks','Leave flexibility','Prioritise nearer deadlines'].map(x=>'<label class="row"><span>'+x+'</span><input type="checkbox" checked></label>').join('')}
+function generatePlan(){go('plan');toast('Draft plan generated')}
+function renderPlan(){planList.innerHTML=[['MON 12','Literature review','14:00–16:00'],['TUE 13','Research papers','17:00–18:30'],['WED 14','Prototype refinement','14:00–16:00'],['THU 15','Technical review','16:00–18:00'],['FRI 16','Group meeting','13:00–14:00']].map(x=>'<div class="card"><small>'+x[0]+'</small><b style="display:block;margin-top:5px">'+x[1]+'</b><small>'+x[2]+'</small></div>').join('')}
+function acceptPlan(){toast('Plan accepted and added to calendar');go('calendar')}
+let timer=1500,run=false,int;
+function updateTimer(){const m=String(Math.floor(timer/60)).padStart(2,'0'),s=String(timer%60).padStart(2,'0');document.getElementById('timer').textContent=m+':'+s;document.getElementById('timerBar').style.width=(timer/1500*100)+'%'}
+function toggleTimer(){run=!run;timerBtn.textContent=run?'Pause':'Start';if(run){int=setInterval(()=>{timer--;updateTimer();if(timer<=0){clearInterval(int);run=false;timer=1500;toast('Focus session complete')}} ,1000)}else clearInterval(int)}
+function endFocus(){clearInterval(int);run=false;timer=1500;updateTimer();toast('Focus session saved');go('home')}
+function renderMoods(){moods.innerHTML=['Very low','Low','Okay','Good','Great'].map(x=>'<button class="chip" onclick="moods.querySelectorAll(\'.chip\').forEach(b=>b.classList.remove(\'on\'));this.classList.add(\'on\')">'+x+'</button>').join('')}
+function renderFactors(){factors.innerHTML=['Workload','Sleep','Motivation','Social','Other'].map(x=>'<button class="chip">'+x+'</button>').join('')}
+function saveWellbeing(){toast('Check-in saved');go('home')}
+function sendMessage(){const m=message.value.trim();if(!m)return toast('Write a message first.');message.value='';toast('Message added to group workspace')}
+function simulate(){const v=scenario.value;const a=v==='work'?['18.5 → 14 h','1 → 3','15% → 4%']:v==='travel'?['18.5 → 15.5 h','1 → 2','15% → 8%']:['18.5 → 17 h','1 → 2','15% → 10%'];impact.innerHTML='<div class="row"><span>Study time</span><b class="danger">'+a[0]+'</b></div><div class="row"><span>Tasks at risk</span><b class="danger">'+a[1]+'</b></div><div class="row"><span>Buffer</span><b>'+a[2]+'</b></div>'}
+function applySchedule(){toast('Calendar updated');go('home')}
+function applyScenario(){toast('Scenario applied to planning view');go('planner')}
+function downloadData(){const blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='uniflow-data.json';a.click();toast('Data export created')}
+mini.innerHTML=[58,88,72,100,78].map(h=>'<div class="bar" style="height:'+h+'px;background:#2c5b7d"></div>').join('');
+function render(){renderTasks();renderHome();renderGoals();renderRules();renderPlan();renderMoods();renderFactors();simulate()}
+render();if(location.hash.slice(1)&&document.getElementById(location.hash.slice(1)))go(location.hash.slice(1));
+</script>
+</body></html>

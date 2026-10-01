@@ -622,6 +622,16 @@ function seedAuthDB(){const d=authDB();d.university=UNIVERSITY;d.users=d.users||
 function currentProfile(){
  const d=authDB();
  let sid=localStorage.getItem(SESSION_KEY);
+ let forced=String(window.__ufForcedProfile||'').trim().toLowerCase();
+ if(forced){
+  const fu=d.users?.[forced];
+  if(fu){
+   const canonical={guest:['Guest User','Guest','Demo Access',[]],dinakar:['Dinakar Nayak','Student','MSc Artificial Intelligence',['CO7091','CO7262','CO7113']],student:['Aisha Khan','Student','MSc Artificial Intelligence',['CO7262']],professor:['Alex Morgan','Professor / Staff','Teaching Workspace',['CO7091','CO7113']],admin:['UniFlow Administrator','Administrator','University Administration',['*']]};
+   const k=forced.split('@')[0],x=canonical[k];
+   return x?{...fu,key:forced,email:forced,name:x[0],role:x[1],course:x[2],courseIds:x[3]}:{...fu,key:forced,email:fu.email||forced};
+  }
+ }
+
  let s=sid&&d.sessions?d.sessions[sid]:null;
  let email=String(s&&s.email||'').trim().toLowerCase();
  if(!email){
@@ -943,7 +953,7 @@ function ensure(){
 function enter(email){
  var d=ensure(),now=Date.now(),sid='UF-'+now+'-'+Math.random().toString(36).slice(2);
  d.sessions={};d.sessions[sid]={email:email,createdAt:now,expiresAt:now+43200000};write(d);
- localStorage.setItem(SESSION,sid);localStorage.setItem('uniflowSession','active');localStorage.setItem('uniflowCurrentUser',JSON.stringify({email:email}));
+ localStorage.setItem(SESSION,sid);localStorage.setItem('uniflowSession','active');localStorage.setItem('uniflowCurrentUser',JSON.stringify({email:email}));window.__ufForcedProfile=String(email).toLowerCase();
  var a=document.getElementById('auth'),app=document.getElementById('app');if(a)a.style.display='none';if(app)app.style.display='block';
  try{if(typeof loadUserData==='function')loadUserData()}catch(e){}
  try{if(typeof renderAll==='function')renderAll()}catch(e){}

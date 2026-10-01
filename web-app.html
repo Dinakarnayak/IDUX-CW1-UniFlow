@@ -876,7 +876,7 @@ function mailData(){
 (function(){
 'use strict';
 const DB='uniflowUniversityDBV1', SESSION='uniflowLocalSessionV2';
-function hash(p){let h=2166136261;String(p).split('').forEach(ch=>{h^=ch.charCodeAt(0);h=Math.imul(h,16777619)});return 'uf-'+(h>>>0).toString(16)}
+function hash(p){if(typeof localHash==='function')return localHash(p);let h=2166136261;String(p).split('').forEach(ch=>{h^=ch.charCodeAt(0);h=Math.imul(h,16777619)});return 'uf-'+(h>>>0).toString(16)}
 function read(){try{const d=JSON.parse(localStorage.getItem(DB)||'null');return d&&d.users?d:{university:{id:'UNIFLOW-UNI',name:'UniFlow University'},users:{},sessions:{}}}catch(e){return {users:{},sessions:{}}}}
 function write(d){localStorage.setItem(DB,JSON.stringify(d))}
 function error(msg){const e=document.getElementById('freshLoginError');if(e){e.textContent=msg;e.style.display=msg?'block':'none'}}
@@ -924,7 +924,7 @@ function signIn(){
  if(!input||!pass){error('Enter your university ID/email and password.');return}
  const d=ensure(),u=findUser(input,d);
  if(!u||u.email==='guest@uniflow.local'){error('Student account not found. Try dinakar / demo1234 for the demo student.');return}
- if(u.status!=='active'||u.passwordHash!==hash(pass)){error('Incorrect password. Try dinakar / demo1234 for the demo student.');return}
+ if(u.status!=='active'||(u.passwordHash!==hash(pass)&&u.passwordHash!==(typeof localHash==='function'?localHash(pass):hash(pass)))){error('Incorrect password. Try dinakar / demo1234 for the demo student.');return}
  try{activate(u.email)}catch(e){error('Sign-in could not open the workspace: '+e.message)}
 }
 function guest(){clearError();try{activate('guest@uniflow.local')}catch(e){error('Guest access could not be opened.')}}
@@ -978,9 +978,11 @@ window.ufAuthSignIn=signIn;
 function boot(){
  ensure();
  const s=document.getElementById('freshSignIn'),g=document.getElementById('freshGuest'),c=document.getElementById('freshCreate');
- if(s){s.onclick=null;s.addEventListener('click',signIn)}
- if(g){g.onclick=null;g.addEventListener('click',guest)}
- if(c){c.onclick=null;c.addEventListener('click',createPage)}
+ if(s){s.onclick=null;s.addEventListener('click',function(e){e.preventDefault();signIn()})}
+ if(g){g.onclick=null;g.addEventListener('click',function(e){e.preventDefault();guest()})}
+ if(c){c.onclick=null;c.addEventListener('click',function(e){e.preventDefault();createPage()})}
+ const pe=document.getElementById('freshLoginPassword');if(pe){pe.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();signIn()}})}
+ const ee=document.getElementById('freshLoginEmail');if(ee){ee.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();document.getElementById('freshLoginPassword')?.focus()}})}
  const existing=localStorage.getItem(SESSION);
  const d=read(),session=existing&&d.sessions&&d.sessions[existing];
  // Never auto-open Guest. Only restore a real, valid session for the same saved account.

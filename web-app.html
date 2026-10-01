@@ -138,6 +138,25 @@ window.uniflowSignIn=function(){
     localStorage.setItem(SESSION,sid);
     localStorage.setItem('uniflowSession','active');
     localStorage.setItem('uniflowCurrentUser',JSON.stringify({email:email}));
+    /* Hard verification: a normal login may never silently become Guest. */
+    var verifyRaw=localStorage.getItem(DB),verifyDb;
+    try{verifyDb=JSON.parse(verifyRaw||'null')}catch(e){verifyDb=null}
+    var verifySession=verifyDb&&verifyDb.sessions?verifyDb.sessions[sid]:null;
+    var verifyEmail=String(verifySession&&verifySession.email||'').toLowerCase();
+    if(verifyEmail!==String(email).toLowerCase()){
+      localStorage.removeItem(SESSION);
+      localStorage.removeItem('uniflowSession');
+      localStorage.removeItem('uniflowCurrentUser');
+      window.uniflowShowError('Login session verification failed. Your account was not switched to Guest. Please sign in again.');
+      return false;
+    }
+    if(verifyEmail==='guest@uniflow.local'){
+      localStorage.removeItem(SESSION);
+      localStorage.removeItem('uniflowSession');
+      localStorage.removeItem('uniflowCurrentUser');
+      window.uniflowShowError('Guest mode can only be entered through Continue as guest.');
+      return false;
+    }
     var auth=document.getElementById('auth'),app=document.getElementById('app');
     if(auth)auth.style.display='none';
     if(app)app.style.display='block';

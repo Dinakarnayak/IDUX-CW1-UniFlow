@@ -624,8 +624,22 @@ function askAgent(){
 }
 function renderAll(){seedAuthDB();const p=currentProfile();if(!p){signOut();return}renderUniversityServices();renderAccount();renderMail();renderUniversityLayer();const current=now(),h=document.querySelector('#today .title');if(h)h.textContent=(current.getHours()<12?'Good morning, ':current.getHours()<18?'Good afternoon, ':'Good evening, ')+(p.name||'User').split(' ')[0];const clock=document.getElementById('liveDateTime');if(clock)clock.textContent=current.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+' · '+current.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});const initials=(p.role==='Guest'?'GU':(p.name||'U').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase());const av=document.getElementById('avatarBtn');if(av)av.textContent=initials;const tn=document.getElementById('topProfileName');if(tn)tn.textContent=p.name||'User';const tr=document.getElementById('topProfileRole');if(tr)tr.textContent=p.role==='Guest'?'Guest · Read only':(p.role||'Student')+' · University account';const sn=document.getElementById('settingsName');if(sn)sn.textContent=p.name||'Profile';const sa=document.getElementById('settingsAccount');if(sa)sa.textContent=p.email||'Guest account';const sr=document.getElementById('settingsRole');if(sr)sr.textContent=p.role||'Student';renderHome();renderCalendar();renderClasses();renderTasks();renderExams();renderGrades();renderReminders();renderFocusHistory();renderActivity();renderCourses();renderAIBoard();renderStudyCoach();renderAgentKnowledge();renderAnalytics();applyA11y();const upcoming=data.exams.map(e=>({...e,days:daysUntil(e.date)})).filter(e=>e.days>=0).sort((a,b)=>a.days-b.days);const ec=document.getElementById('examCountdown');if(ec)ec.textContent=upcoming.length?upcoming[0].days+' days':'No upcoming exam';const et=ec?.nextElementSibling;if(et)et.textContent=upcoming[0]?.class||'—';document.getElementById('focusTotal').textContent=(data.focus/60).toFixed(1)+'h';document.getElementById('sessionCount').textContent=data.focusSessions||0;document.getElementById('dark').checked=data.settings.dark;document.getElementById('defaultView').value=data.settings.view;document.getElementById('classReminders').checked=data.settings.classReminders;document.getElementById('deadlineReminders').checked=data.settings.deadlineReminders;document.body.classList.toggle('dark',data.settings.dark)}
 document.getElementById('directoryQuery')?.addEventListener('input',renderDirectory);document.getElementById('search').addEventListener('input',e=>{const q=e.target.value.toLowerCase();if(q&&data.tasks.some(t=>(t.title+' '+t.class).toLowerCase().includes(q))){go('tasks');filter='all';renderTasks()}});
-if(localStorage.getItem(SESSION_KEY)&&currentProfile()){document.getElementById('auth').style.display='none';document.getElementById('app').style.display='block';loadUserData();renderAll()}
-if(location.hash&&currentProfile())go(location.hash.slice(1));
+(function restoreExistingSession(){
+ const p=currentProfile();
+ const sid=localStorage.getItem(SESSION_KEY);
+ if(sid&&p){
+   document.getElementById('auth').style.display='none';
+   document.getElementById('app').style.display='block';
+   loadUserData();
+   renderAll();
+ }else{
+   if(sid){try{clearLocalSession()}catch(e){}}
+   const auth=document.getElementById('auth'),app=document.getElementById('app');
+   if(auth)auth.style.display='grid';
+   if(app)app.style.display='none';
+ }
+}
+)();
 setInterval(()=>{const e=document.getElementById('liveDateTime');if(e){const d=now();e.textContent=d.toLocaleDateString('en-GB',{weekday:'long',day:'numeric',month:'long',year:'numeric'})+' · '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}},1000);
 updateTimer();
 

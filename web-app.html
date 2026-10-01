@@ -760,6 +760,22 @@ function renderAttendance(){
  document.getElementById('attendanceList').innerHTML=rows.map(x=>'<div class="item"><span class="dot '+(x.status==='Late'?'orange':'green')+'"></span><span class="item-main"><b>'+esc(x.name)+'</b><small class="sub">'+esc(x.day)+' · '+esc(x.time)+'</small></span><span class="tag '+(x.status==='Late'?'':'green')+'">'+x.status+'</span></div>').join('');
 }
 function workDaysForAttendance(i){const d=new Date(now());d.setDate(d.getDate()-(i+1));return d}
+function createSupportRequest(team){
+ if(typeof requireWrite==='function'&&!requireWrite())return;
+ const chosen=team||'Student Services';
+ document.getElementById('modalTitle').textContent='New support request';
+ document.getElementById('modalBody').innerHTML='<div class="label">Support team</div><input id="supportTeam" value="'+esc(chosen)+'"><div class="label">Subject</div><input id="supportSubject" placeholder="What do you need help with?"><div class="label">Details</div><textarea id="supportBody" rows="7" placeholder="Describe your request"></textarea><button class="btn" style="width:100%;margin-top:14px" onclick="saveSupportRequest()">Submit request</button>';
+ document.getElementById('modal').classList.remove('hidden');
+}
+function saveSupportRequest(){
+ const team=f('supportTeam'),subject=f('supportSubject'),body=f('supportBody');
+ if(!subject||!body){toast('Enter a subject and describe your request');return}
+ const key=userDataKey()+'_support',items=JSON.parse(localStorage.getItem(key)||'[]');
+ items.unshift({team,subject,body,date:dateLabel(now()),status:'Submitted'});
+ localStorage.setItem(key,JSON.stringify(items));
+ closeModal();renderSupport();toast('Support request submitted');
+}
+
 function renderSupport(){
  const c=document.getElementById('supportCards');if(!c)return;
  const teams=[['Academic Support','Study skills, feedback and learning advice'],['Wellbeing','General student wellbeing support'],['IT Support','Account, access and technical help'],['Registry','Enrolment and academic records'],['Finance','Fees, funding and payments'],['Accommodation','Housing and accommodation support'],['Careers','CVs, internships and graduate applications'],['Library','Resources, loans and databases'],['Accessibility','Alternative formats and access adjustments'],['International Office','International student guidance'],['Examinations','Assessment and exam support'],['Student Union','Societies and student community'],['Academic Skills','Writing, research and referencing'],['Learning Technology','Virtual learning and digital tools'],['Disability Support','Reasonable adjustments and support'],['Admissions','Application and registration enquiries'],['Security','Campus and account security guidance'],['Complaints','Feedback and formal concerns'],['Counselling','Confidential wellbeing support'],['Student Finance','Funding and payment guidance']];

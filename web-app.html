@@ -895,7 +895,10 @@ function mailData(){
  function boot(){
    document.getElementById('freshSignIn').onclick=signIn;document.getElementById('freshGuest').onclick=guest;
    document.querySelectorAll('button[onclick="signOut()"]').forEach(function(b){b.onclick=logout});
-   var d=db();d.sessions={};save(d);localStorage.removeItem('uniflowLocalSessionV2');localStorage.removeItem('uniflowSession');localStorage.removeItem('uniflowCurrentUser');
+   // Seed the demo accounts before the standalone login reads them.
+   if(typeof seedAuthDB==='function')seedAuthDB();
+   var d=db();d.sessions={};save(d);
+   localStorage.removeItem('uniflowLocalSessionV2');localStorage.removeItem('uniflowSession');localStorage.removeItem('uniflowCurrentUser');
    document.getElementById('auth').style.display='grid';document.getElementById('app').style.display='none';
  }
  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();

@@ -72,6 +72,37 @@ body.dark .uf-ai-suggestion,body.dark .uf-ai-mode{background:var(--panel);color:
 </div>
 <p class="sub" style="font-size:11px;margin-top:14px">Coursework prototype · local browser authentication · not connected to University of Leicester SSO.</p>
 </div></div>
+<div id="registration" style="display:none;min-height:100vh;background:var(--bg);padding:40px 20px">
+ <div style="max-width:760px;margin:0 auto">
+  <div class="row" style="margin-bottom:22px">
+   <div><div class="eyebrow">UniFlow University</div><h1 class="title">Create your local account</h1><p class="sub">Complete your university profile to create a local UniFlow account.</p></div>
+   <button type="button" class="btn alt" onclick="hideRegistration()">← Back to sign in</button>
+  </div>
+  <div class="card">
+   <div class="eyebrow">01 · Personal details</div>
+   <div class="grid g2 mt">
+    <div><div class="label">Full name *</div><input id="regName" placeholder="e.g. Dinakar Nayak" autocomplete="name"></div>
+    <div><div class="label">Student / Staff ID *</div><input id="regStudentId" placeholder="e.g. UF-STU-1001"></div>
+   </div>
+   <div class="label" style="margin-top:14px">University email *</div>
+   <input id="regEmail" type="email" placeholder="name@uniflow.local" autocomplete="email">
+   <div class="grid g2" style="margin-top:18px">
+    <div><div class="label">Account type *</div><select id="regRole"><option value="Student">Student</option><option value="Professor / Staff">Professor / Staff</option></select></div>
+    <div><div class="label">Course / workspace *</div><select id="regCourse"><option value="">Select one</option><option value="MSc Artificial Intelligence">MSc Artificial Intelligence</option><option value="Teaching Workspace">Teaching Workspace</option></select></div>
+   </div>
+  </div>
+  <div class="card mt">
+   <div class="eyebrow">02 · Security</div>
+   <div class="grid g2 mt">
+    <div><div class="label">Password *</div><input id="regPassword" type="password" placeholder="At least 6 characters" autocomplete="new-password"></div>
+    <div><div class="label">Confirm password *</div><input id="regConfirm" type="password" placeholder="Repeat password" autocomplete="new-password"></div>
+   </div>
+   <div id="registrationError" role="alert" aria-live="assertive" style="display:none;color:var(--red);margin-top:14px;padding:11px;border:1px solid var(--red);border-radius:10px;background:rgba(255,80,80,.08)"></div>
+   <button type="button" class="btn" style="width:100%;margin-top:18px" onclick="createRegisteredUser()">Create local account</button>
+   <p class="sub" style="margin-top:10px;font-size:12px">This is a coursework prototype. The account is stored locally in this browser and is not connected to university SSO.</p>
+  </div>
+ </div>
+</div>
 <script>
 window.uniflowShowError=function(message){var e=document.getElementById('authError');if(e){e.textContent='ERROR: '+message;e.style.display='block';e.scrollIntoView({block:'nearest'});}else{alert('ERROR: '+message);}};
 window.uniflowSignIn=function(){
@@ -463,18 +494,54 @@ document.getElementById('signInBtn')?.addEventListener('click',()=>login());
 document.getElementById('guestBtn')?.addEventListener('click',()=>guestLogin());
 document.getElementById('email')?.addEventListener('keydown',e=>{if(e.key==='Enter')login()});
 document.getElementById('password')?.addEventListener('keydown',e=>{if(e.key==='Enter')login()});
-function registerNow(){
- const name=(prompt('Full name','New UniFlow Student')||'').trim();
- if(!name){setAuthError('Enter your name to create an account.');return}
- const email=(prompt('University email','newstudent@uniflow.local')||'').trim().toLowerCase();
- if(!/^\S+@uniflow\.local$/.test(email)){setAuthError('Use an email ending in @uniflow.local.');return}
- const password=prompt('Create a password','student123');
- if(!password||password.length<4){setAuthError('Password must contain at least 4 characters.');return}
- seedAuthDB();const d=authDB();
- if(d.users[email]){setAuthError('That university account already exists.');return}
- d.users[email]={id:'UF-'+String(Object.keys(d.users).length+1).padStart(3,'0'),email,name,role:'Student',course:'MSc Artificial Intelligence',courseIds:[],passwordHash:localHash(password),status:'active'};
- saveAuthDB(d);createLocalSession(email);enterApp();toast('Account created — signed in as '+name);
+function showRegistration(){
+ const auth=document.getElementById('auth'),reg=document.getElementById('registration');
+ if(auth)auth.style.display='none';
+ if(reg)reg.style.display='block';
 }
+function hideRegistration(){
+ const reg=document.getElementById('registration'),auth=document.getElementById('auth');
+ if(reg)reg.style.display='none';
+ if(auth)auth.style.display='grid';
+}
+function createRegisteredUser(){
+ try{
+  const name=(document.getElementById('regName')?.value||'').trim();
+  const email=(document.getElementById('regEmail')?.value||'').trim().toLowerCase();
+  const studentId=(document.getElementById('regStudentId')?.value||'').trim();
+  const course=document.getElementById('regCourse')?.value||'';
+  const role=document.getElementById('regRole')?.value||'Student';
+  const password=document.getElementById('regPassword')?.value||'';
+  const confirm=document.getElementById('regConfirm')?.value||'';
+  const error=document.getElementById('registrationError');
+  const show=function(t){if(error){error.textContent=t;error.style.display='block';error.scrollIntoView({block:'nearest'});}};
+  if(error)error.style.display='none';
+  if(name.length<2){show('Please enter your full name.');return;}
+  if(!/^\S+@uniflow\.local$/.test(email)){show('Use a university email ending in @uniflow.local.');return;}
+  if(!studentId){show('Enter your student or staff ID.');return;}
+  if(!course){show('Select your course or workspace.');return;}
+  if(password.length<6){show('Password must contain at least 6 characters.');return;}
+  if(password!==confirm){show('The passwords do not match.');return;}
+  seedAuthDB();
+  const d=authDB();
+  if(d.users[email]){show('An account with this university email already exists.');return;}
+  const id='UF-'+String(Object.keys(d.users).length+1).padStart(3,'0');
+  const courseIds=course==='MSc Artificial Intelligence'?['CO7091','CO7262','CO7113']:['CO7262'];
+  d.users[email]={id,email,name,role,course,courseIds,studentId,passwordHash:localHash(password),status:'active',createdAt:Date.now()};
+  saveAuthDB(d);
+  createLocalSession(email);
+  const reg=document.getElementById('registration'),app=document.getElementById('app');
+  if(reg)reg.style.display='none';
+  if(app)app.style.display='block';
+  enterApp();
+  toast('Account created — welcome to UniFlow');
+ }catch(err){
+  const e=document.getElementById('registrationError');
+  if(e){e.textContent='Registration error: '+(err.message||err);e.style.display='block';}
+ }
+}
+function registerNow(){showRegistration()}
+
 document.getElementById('newUserBtn')?.addEventListener('click',registerNow);
 function openProfile(){const p=currentProfile()||{key:'guest',name:'Guest User',university:'Guest workspace',course:'Demo planner',role:'Guest',email:''};const guest=p.role==='Guest';const perms=(ROLE_PERMISSIONS[p.role]||ROLE_PERMISSIONS.Guest).join(' · ');const assigned=p.role==='Administrator'?'All university courses':p.role==='Guest'?'Catalogue only — no course access':((p.courseIds||ROLE_COURSE_ACCESS[p.email]||[]).map(id=>COURSE_CATALOG[id]?.name||id).join(' · ')||'No courses assigned');document.getElementById('modalTitle').textContent=guest?'Guest account':'Account details';document.getElementById('modalBody').innerHTML='<div class="card" style="margin-bottom:14px;padding:16px"><div style="display:flex;align-items:center;gap:12px"><span class="avatar">'+(guest?'GU':esc((p.name||'U').split(' ').map(x=>x[0]).join('').slice(0,2).toUpperCase()))+'</span><div><b>'+esc(p.name)+'</b><small class="sub" style="display:block">'+esc(p.role)+(guest?' · Read only':' · University account')+'</small></div></div></div><div class="label">Name</div><input id="pName" value="'+esc(p.name)+'" '+(guest?'disabled':'')+'><div class="label">University</div><input id="pUni" value="'+esc(p.university||'UniFlow University')+'" '+(guest?'disabled':'')+'><div class="label">Course / workspace</div><input id="pCourse" value="'+esc(p.course||'')+'" '+(guest?'disabled':'')+'><div class="label">Role</div><input value="'+esc(p.role)+'" disabled><div class="label">Email</div><input value="'+esc(p.email||'Guest account')+'" disabled><div class="label">Access</div><input value="'+esc(guest?'Read only · '+perms:'Authorised · '+perms)+'" disabled>'+(guest?'<p class="sub" style="margin-top:12px">You are signed in as Guest User. Changes to university data are disabled in guest mode.</p>':'<button class="btn" style="width:100%;margin-top:15px" onclick="saveProfileForm()">Save profile</button>');document.getElementById('modal').classList.remove('hidden')}
 function saveProfileForm(){if(!requireWrite())return;const p=currentProfile()||{key:'guest'};p.name=f('pName')||'User';p.university=f('pUni')||'University';p.course=f('pCourse')||'Course';p.role=f('pRole')||'Student';saveProfile(p);closeModal();renderAll();toast('Profile saved')}

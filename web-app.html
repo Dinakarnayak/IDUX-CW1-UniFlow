@@ -991,4 +991,93 @@ function mailData(){
  for(let i=base.length;i<30;i++)arr.push([senders[i-base.length],subjects[i-base.length],'UniFlow demo message with relevant information for your student workspace.',i<15,iso(-i)]);
  return arr;
 }
+
+// ===== UniFlow Fresh Authentication Controller V3 =====
+(function(){
+  const AUTH_V3='uniflowFreshAuthV3';
+  const DB='uniflowUniversityDBV1';
+  const SESSION='uniflowLocalSessionV2';
+  const TTL=43200000;
+  function hash(p){let h=2166136261;String(p).split('').forEach(ch=>{h^=ch.charCodeAt(0);h=Math.imul(h,16777619)});return 'uf-'+(h>>>0).toString(16)}
+  function db(){try{return JSON.parse(localStorage.getItem(DB)||'null')||{users:{},sessions:{}}}catch(e){return {users:{},sessions:{}}}}
+  function save(d){localStorage.setItem(DB,JSON.stringify(d))}
+  function clearAll(){
+    const d=db(); d.sessions={}; save(d);
+    localStorage.removeItem(SESSION);
+    localStorage.removeItem('uniflowSession');
+    localStorage.removeItem('uniflowCurrentUser');
+    sessionStorage.removeItem(AUTH_V3);
+  }
+  function showAuth(msg){
+    const auth=document.getElementById('auth'),app=document.getElementById('app');
+    if(auth)auth.style.display='grid'; if(app)app.style.display='none';
+    if(msg){const e=document.getElementById('authError');if(e){e.textContent=msg;e.style.display='block'}}
+  }
+  function showApp(){
+    const auth=document.getElementById('auth'),app=document.getElementById('app');
+    if(auth)auth.style.display='none'; if(app)app.style.display='block';
+    if(typeof loadUserData==='function')loadUserData();
+    if(typeof renderAll==='function')renderAll();
+  }
+  window.uniflowFreshSignIn=function(){
+    const input=(document.getElementById('email')?.value||'').trim().toLowerCase();
+    const pass=document.getElementById('password')?.value||'';
+    const d=db();
+    let u=d.users[input];
+    if(!u){
+      u=Object.values(d.users).find(x=>String(x.email||'').toLowerCase()===input || String(x.studentId||x.staffId||x.userId||x.id||'').toLowerCase()===input || String(x.email||'').toLowerCase().split('@')[0]===input);
+    }
+    if(!u){showAuth('Student account not found. Guest access is separate.');return false}
+    const email=String(u.email||'').toLowerCase();
+    if(email==='guest@uniflow.local'){showAuth('Use Continue as guest only for Guest mode.');return false}
+    if(u.status!=='active'||u.passwordHash!==hash(pass)){showAuth('Incorrect university password.');return false}
+    d.sessions={};
+    const sid='UFV3-'+Date.now()+'-'+Math.random().toString(36).slice(2,8);
+    d.sessions[sid]={email,createdAt:Date.now(),expiresAt:Date.now()+TTL,authVersion:'v3'};
+    save(d);
+    localStorage.setItem(SESSION,sid);
+    localStorage.setItem('uniflowSession','active');
+    localStorage.setItem('uniflowCurrentUser',JSON.stringify({email}));
+    sessionStorage.setItem(AUTH_V3,email);
+    showApp();
+    return false;
+  };
+  window.uniflowFreshGuest=function(){
+    const d=db();
+    const u=d.users['guest@uniflow.local'];
+    if(!u){showAuth('Guest account is unavailable.');return false}
+    d.sessions={};
+    const sid='UFV3-GUEST-'+Date.now();
+    d.sessions[sid]={email:'guest@uniflow.local',createdAt:Date.now(),expiresAt:Date.now()+TTL,authVersion:'v3'};
+    save(d);
+    localStorage.setItem(SESSION,sid);
+    localStorage.setItem('uniflowSession','active');
+    localStorage.setItem('uniflowCurrentUser',JSON.stringify({email:'guest@uniflow.local'}));
+    sessionStorage.setItem(AUTH_V3,'guest@uniflow.local');
+    showApp();
+    return false;
+  };
+  window.uniflowFreshSignOut=function(){
+    clearAll();
+    showAuth('');
+    const e=document.getElementById('email'),p=document.getElementById('password');
+    if(e)e.value=''; if(p)p.value='';
+    return false;
+  };
+  function boot(){
+    const sign=document.getElementById('signInBtn'),guest=document.getElementById('guestBtn');
+    if(sign)sign.onclick=window.uniflowFreshSignIn;
+    if(guest)guest.onclick=window.uniflowFreshGuest;
+    document.querySelectorAll('button[onclick="signOut()"]').forEach(b=>b.onclick=window.uniflowFreshSignOut);
+    // Remove any previous Guest/student session before a fresh browser visit.
+    const remembered=sessionStorage.getItem(AUTH_V3);
+    const sid=localStorage.getItem(SESSION);
+    const d=db(),s=d.sessions&&sid?d.sessions[sid]:null;
+    const valid=s&&s.email&&Date.now()<Number(s.expiresAt||0)&&remembered===String(s.email).toLowerCase();
+    if(valid && String(s.email).toLowerCase()!=='guest@uniflow.local') showApp();
+    else if(valid && String(s.email).toLowerCase()==='guest@uniflow.local') showApp();
+    else {clearAll();showAuth('');}
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
+})();
 </script></body></html>

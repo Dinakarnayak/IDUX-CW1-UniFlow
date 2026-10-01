@@ -702,7 +702,7 @@ function askInclusiveAI(q){
 }
 function submitInclusiveAI(){const i=document.getElementById('ufAiInput');const q=i?.value.trim();if(!q)return;askInclusiveAI(q);i.value=''}
 document.getElementById('ufAiInput')?.addEventListener('keydown',e=>{if(e.key==='Enter')submitInclusiveAI()});
-</script></body></htmlfunction mailData(){
+function mailData(){
  const today=now(),iso=n=>{const d=new Date(today);d.setDate(d.getDate()+n);return d.toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})};
  const base=[
  ['Registry','Welcome to UniFlow University','Your student record, timetable and university services are available.',true],
@@ -723,3 +723,4 @@ document.getElementById('ufAiInput')?.addEventListener('keydown',e=>{if(e.key===
  return arr;
 }
 >
+</script></body></html>
